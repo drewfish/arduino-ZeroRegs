@@ -25,23 +25,23 @@ Function Reference
 Prints out configuration registers, as many as the library knows how.
 
 
-### `void printZeroRegAC(Stream &ser)`
+### `void printZeroRegAC(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `AC` peripheral.
 
 
-### `void printZeroRegADC(Stream &ser)`
+### `void printZeroRegADC(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `ADC` peripheral.
 
 
-### `void printZeroRegDAC(Stream &ser)`
+### `void printZeroRegDAC(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `DAC` peripheral.
 
 
-### `void printZeroRegDMAC(Stream &ser)`
+### `void printZeroRegDMAC(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `DMAC` peripheral.
 
 
-### `void printZeroRegDSU(Stream &ser)`
+### `void printZeroRegDSU(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `DSU` peripheral.
 
 
@@ -57,11 +57,11 @@ Prints out the configuration registers for the `EVSYS` peripheral.
 Prints out the configuration registers for the `GCLK` peripheral.
 
 
-### `void printZeroRegI2S(Stream &ser)`
+### `void printZeroRegI2S(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `I2S` peripheral.
 
 
-### `void printZeroRegMTB(Stream &ser)`
+### `void printZeroRegMTB(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `MTB` peripheral.
 
 
@@ -97,15 +97,15 @@ Prints out the configuration registers for a `SERCOM` peripheral.
 Prints out the configuration registers for the `SYSCTRL` peripheral.
 
 
-### `void printZeroRegTC(Stream &ser, Tc* tc, uint8_t idx)`
+### `void printZeroRegTC(Stream &ser, Tc* tc, uint8_t idx)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for a `TC` peripheral.
 
 
-### `void printZeroRegTCC(Stream &ser, Tcc* tcc, uint8_t idx)`
+### `void printZeroRegTCC(Stream &ser, Tcc* tcc, uint8_t idx)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for a `TCC` peripheral.
 
 
-### `void printZeroRegUSB(Stream &ser)`
+### `void printZeroRegUSB(Stream &ser)` -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `USB` peripheral.
 
 

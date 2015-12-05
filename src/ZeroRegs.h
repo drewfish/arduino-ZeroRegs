@@ -30,28 +30,37 @@ SOFTWARE.
 #define ZERO_REGS_H
 #include <Arduino.h>
 
-void printZeroRegAC(Stream &ser);
-void printZeroRegADC(Stream &ser);
-void printZeroRegDAC(Stream &ser);
-void printZeroRegDMAC(Stream &ser);
-void printZeroRegDSU(Stream &ser);
-void printZeroRegEIC(Stream &ser);
-void printZeroRegEVSYS(Stream &ser);
-void printZeroRegGCLK(Stream &ser);
-void printZeroRegI2S(Stream &ser);
-void printZeroRegMTB(Stream &ser);
-void printZeroRegNVMCTRL(Stream &ser);
-void printZeroRegPACs(Stream &ser);
-void printZeroRegPM(Stream &ser);
-void printZeroRegPORT(Stream &ser);
-void printZeroRegRTC(Stream &ser);
-void printZeroRegSBMATRIX(Stream &ser);
-void printZeroRegSERCOM(Stream &ser, Sercom* sercom, uint8_t idx);
-void printZeroRegSYSCTRL(Stream &ser);
-void printZeroRegTC(Stream &ser, Tc* tc, uint8_t idx);
-void printZeroRegTCC(Stream &ser, Tcc* tcc, uint8_t idx);
-void printZeroRegUSB(Stream &ser);
-void printZeroRegWDT(Stream &ser);
-void printZeroRegs(Stream &ser);
+
+// This is a wild experiment in API design. The idea is to make it easy to add
+// new configuration options in the future without a long list of arguments.
+struct ZeroRegOptions {
+    Stream  &ser;
+    bool    showDisabled;
+};
+
+
+void printZeroRegAC(ZeroRegOptions &opts);
+void printZeroRegADC(ZeroRegOptions &opts);
+void printZeroRegDAC(ZeroRegOptions &opts);
+void printZeroRegDMAC(ZeroRegOptions &opts);
+void printZeroRegDSU(ZeroRegOptions &opts);
+void printZeroRegEIC(ZeroRegOptions &opts);
+void printZeroRegEVSYS(ZeroRegOptions &opts);
+void printZeroRegGCLK(ZeroRegOptions &opts);
+void printZeroRegI2S(ZeroRegOptions &opts);
+void printZeroRegMTB(ZeroRegOptions &opts);
+void printZeroRegNVMCTRL(ZeroRegOptions &opts);
+void printZeroRegPACs(ZeroRegOptions &opts);
+void printZeroRegPM(ZeroRegOptions &opts);
+void printZeroRegPORT(ZeroRegOptions &opts);
+void printZeroRegRTC(ZeroRegOptions &opts);
+void printZeroRegSBMATRIX(ZeroRegOptions &opts);
+void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx);
+void printZeroRegSYSCTRL(ZeroRegOptions &opts);
+void printZeroRegTC(ZeroRegOptions &opts, Tc* tc, uint8_t idx);
+void printZeroRegTCC(ZeroRegOptions &opts, Tcc* tcc, uint8_t idx);
+void printZeroRegUSB(ZeroRegOptions &opts);
+void printZeroRegWDT(ZeroRegOptions &opts);
+void printZeroRegs(ZeroRegOptions &opts);
 
 #endif // ZERO_REGS_H

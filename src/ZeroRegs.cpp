@@ -87,7 +87,7 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
     opts.ser.println("--------------------------- EIC");
 
     if (EIC->NMICTRL.bit.NMISENSE) {
-        opts.ser.print("NMI: ");
+        opts.ser.print("NMI:  ");
         printZeroRegEIC_SENSE(opts, EIC->NMICTRL.bit.NMISENSE);
         if (EIC->NMICTRL.bit.NMIFILTEN) {
             opts.ser.print(" FILTEN");
@@ -95,7 +95,7 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
         opts.ser.println("");
     } else {
         if (opts.showDisabled) {
-            opts.ser.println("NMI: none");
+            opts.ser.println("NMI:  none");
         }
     }
 
@@ -106,8 +106,9 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
         if (!opts.showDisabled && (entry & 0x7) == 0) {
             continue;
         }
-        opts.ser.print(extint);
-        opts.ser.print(": ");
+        opts.ser.print("EXTINT");
+        PRINTPAD2(extint);
+        opts.ser.print(":  ");
         printZeroRegEIC_SENSE(opts, 0x7 & entry);
         if (0x8 & entry) {
             opts.ser.print(" FILTEN");
@@ -144,8 +145,8 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
         // FUTURE: better way to wait until write has synchronized
         delay(1);
         if (EVSYS->CHANNEL.bit.EVGEN || opts.showDisabled) {
-            opts.ser.print("CHANNEL ");
-            PRINTHEX(chid);
+            opts.ser.print("CHANNEL");
+            PRINTPAD2(chid);
             opts.ser.print(":  ");
         }
         if (! EVSYS->CHANNEL.bit.EVGEN) {
@@ -297,11 +298,11 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
         }
         if (EVSYS->USER.bit.CHANNEL == 0) {
             if (opts.showDisabled) {
-                opts.ser.println(" --disabled--");
+                opts.ser.println(":  --disabled--");
             }
         } else {
-            opts.ser.print(" CHANNEL=");
-            PRINTHEX(EVSYS->USER.bit.CHANNEL - 1);
+            opts.ser.print(":  CHANNEL");
+            PRINTPAD2(EVSYS->USER.bit.CHANNEL - 1);
             opts.ser.println("");
         }
     }
@@ -313,26 +314,26 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
 }
 
 
-static const char gclk_name_00[] = "DFLL48M";
-static const char gclk_name_01[] = "FDPLL96M";
-static const char gclk_name_02[] = "FDPLL96M_32K";
+static const char gclk_name_00[] = "DFLL48M_REF";
+static const char gclk_name_01[] = "DPLL";
+static const char gclk_name_02[] = "DPLL_32K";
 static const char gclk_name_03[] = "WDT";
 static const char gclk_name_04[] = "RTC";
 static const char gclk_name_05[] = "EIC";
 static const char gclk_name_06[] = "USB";
-static const char gclk_name_07[] = "EVSYS_0";
-static const char gclk_name_08[] = "EVSYS_1";
-static const char gclk_name_09[] = "EVSYS_2";
-static const char gclk_name_10[] = "EVSYS_3";
-static const char gclk_name_11[] = "EVSYS_4";
-static const char gclk_name_12[] = "EVSYS_5";
-static const char gclk_name_13[] = "EVSYS_6";
-static const char gclk_name_14[] = "EVSYS_7";
-static const char gclk_name_15[] = "EVSYS_8";
-static const char gclk_name_16[] = "EVSYS_9";
-static const char gclk_name_17[] = "EVSYS_10";
-static const char gclk_name_18[] = "EVSYS_11";
-static const char gclk_name_19[] = "SERCOMX_SLOW";
+static const char gclk_name_07[] = "EVSYS_CHANNEL_0";
+static const char gclk_name_08[] = "EVSYS_CHANNEL_1";
+static const char gclk_name_09[] = "EVSYS_CHANNEL_2";
+static const char gclk_name_10[] = "EVSYS_CHANNEL_3";
+static const char gclk_name_11[] = "EVSYS_CHANNEL_4";
+static const char gclk_name_12[] = "EVSYS_CHANNEL_5";
+static const char gclk_name_13[] = "EVSYS_CHANNEL_6";
+static const char gclk_name_14[] = "EVSYS_CHANNEL_7";
+static const char gclk_name_15[] = "EVSYS_CHANNEL_8";
+static const char gclk_name_16[] = "EVSYS_CHANNEL_9";
+static const char gclk_name_17[] = "EVSYS_CHANNEL_10";
+static const char gclk_name_18[] = "EVSYS_CHANNEL_11";
+static const char gclk_name_19[] = "SERCOMx_SLOW";
 static const char gclk_name_20[] = "SERCOM0_CORE";
 static const char gclk_name_21[] = "SERCOM1_CORE";
 static const char gclk_name_22[] = "SERCOM2_CORE";
@@ -368,18 +369,18 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
         while (GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY) {}
 
         if (GCLK->CLKCTRL.bit.CLKEN || opts.showDisabled) {
-            opts.ser.print("GCLK ");
+            opts.ser.print("GCLK_");
             opts.ser.print(gclk_names[gclkid]);
-            opts.ser.print(":");
+            opts.ser.print(": ");
         }
         if (GCLK->CLKCTRL.bit.CLKEN) {
-            opts.ser.print(" GEN=");
-            PRINTHEX(GCLK->CLKCTRL.bit.GEN);
+            opts.ser.print(" GEN");
+            PRINTPAD2(GCLK->CLKCTRL.bit.GEN);
             PRINTFLAG(GCLK->CLKCTRL, WRTLOCK);
             opts.ser.println("");
         } else {
             if (opts.showDisabled) {
-                opts.ser.println(" --disabled-- ");
+                opts.ser.println(" --disabled--");
             }
         }
     }
@@ -392,8 +393,11 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
         while (GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY) {}
 
         if (GCLK->GENCTRL.bit.GENEN || opts.showDisabled) {
-            opts.ser.print("GEN ");
-            PRINTHEX(genid);
+            opts.ser.print("GEN");
+            PRINTPAD2(genid);
+            if (genid == 0) {
+                opts.ser.print("/GCLK_MAIN");
+            }
             opts.ser.print(":  ");
         }
         if (GCLK->GENCTRL.bit.GENEN) {
@@ -413,17 +417,23 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
             // configuration is to be read, and then read the GENDIV register.
             WRITE8(GCLK->GENDIV.reg, genid);
             while (GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY) {}
-            opts.ser.print("/");
-            PRINTSCALE(GCLK->GENDIV.bit.DIV);
+            if (GCLK->GENCTRL.bit.DIVSEL) {
+                opts.ser.print("/");
+                PRINTSCALE(GCLK->GENDIV.bit.DIV + 1);
+            } else {
+                if (GCLK->GENDIV.bit.DIV > 1) {
+                    opts.ser.print("/");
+                    opts.ser.print(GCLK->GENDIV.bit.DIV);
+                }
+            }
             PRINTFLAG(GCLK->GENCTRL, IDC);
             PRINTFLAG(GCLK->GENCTRL, OOV);
             PRINTFLAG(GCLK->GENCTRL, OE);
-            PRINTFLAG(GCLK->GENCTRL, DIVSEL);
             PRINTFLAG(GCLK->GENCTRL, RUNSTDBY);
             opts.ser.println("");
         } else {
             if (opts.showDisabled) {
-                opts.ser.println(" --disabled--");
+                opts.ser.println("--disabled--");
             }
         }
     }
@@ -631,58 +641,58 @@ void printZeroRegPM(ZeroRegOptions &opts) {
     opts.ser.println("");
 
     opts.ser.print("AHBMASK: ");
-    PRINTFLAG(PM->AHBMASK, HPB0_);
-    PRINTFLAG(PM->AHBMASK, HPB1_);
-    PRINTFLAG(PM->AHBMASK, HPB2_);
-    PRINTFLAG(PM->AHBMASK, DSU_);
-    PRINTFLAG(PM->AHBMASK, NVMCTRL_);
-    PRINTFLAG(PM->AHBMASK, DMAC_);
-    PRINTFLAG(PM->AHBMASK, USB_);
+    if (PM->AHBMASK.bit.HPB0_)      { opts.ser.print(" CLK_HPBA_AHB"); }
+    if (PM->AHBMASK.bit.HPB1_)      { opts.ser.print(" CLK_HPBB_AHB"); }
+    if (PM->AHBMASK.bit.HPB2_)      { opts.ser.print(" CLK_HPBC_AHB"); }
+    if (PM->AHBMASK.bit.DSU_)       { opts.ser.print(" CLK_DSU_AHB"); }
+    if (PM->AHBMASK.bit.NVMCTRL_)   { opts.ser.print(" CLK_NVMCTRL_AHB"); }
+    if (PM->AHBMASK.bit.DMAC_)      { opts.ser.print(" CLK_DMAC_AHB"); }
+    if (PM->AHBMASK.bit.USB_)       { opts.ser.print(" CLK_USB_AHB"); }
     opts.ser.println("");
 
     opts.ser.print("APBAMASK: ");
-    PRINTFLAG(PM->APBAMASK, PAC0_);
-    PRINTFLAG(PM->APBAMASK, PM_);
-    PRINTFLAG(PM->APBAMASK, SYSCTRL_);
-    PRINTFLAG(PM->APBAMASK, GCLK_);
-    PRINTFLAG(PM->APBAMASK, WDT_);
-    PRINTFLAG(PM->APBAMASK, RTC_);
-    PRINTFLAG(PM->APBAMASK, EIC_);
+    if (PM->APBAMASK.bit.PAC0_)     { opts.ser.print(" CLK_PAC0_APB"); }
+    if (PM->APBAMASK.bit.PM_)       { opts.ser.print(" CLK_PM_APB"); }
+    if (PM->APBAMASK.bit.SYSCTRL_)  { opts.ser.print(" CLK_SYSCTRL_APB"); }
+    if (PM->APBAMASK.bit.GCLK_)     { opts.ser.print(" CLK_GCLK_APB"); }
+    if (PM->APBAMASK.bit.WDT_)      { opts.ser.print(" CLK_WDT_APB"); }
+    if (PM->APBAMASK.bit.RTC_)      { opts.ser.print(" CLK_RTC_APB"); }
+    if (PM->APBAMASK.bit.EIC_)      { opts.ser.print(" CLK_EIC_APB"); }
     opts.ser.println("");
 
     opts.ser.print("APBBMASK: ");
-    PRINTFLAG(PM->APBBMASK, PAC1_);
-    PRINTFLAG(PM->APBBMASK, DSU_);
-    PRINTFLAG(PM->APBBMASK, NVMCTRL_);
-    PRINTFLAG(PM->APBBMASK, PORT_);
-    PRINTFLAG(PM->APBBMASK, DMAC_);
-    PRINTFLAG(PM->APBBMASK, USB_);
+    if (PM->APBBMASK.bit.PAC1_)     { opts.ser.print(" CLK_PAC1_APB"); }
+    if (PM->APBBMASK.bit.DSU_)      { opts.ser.print(" CLK_DSU_APB"); }
+    if (PM->APBBMASK.bit.NVMCTRL_)  { opts.ser.print(" CLK_NVMCTRL_APB"); }
+    if (PM->APBBMASK.bit.PORT_)     { opts.ser.print(" CLK_PORT_APB"); }
+    if (PM->APBBMASK.bit.DMAC_)     { opts.ser.print(" CLK_DMAC_APB"); }
+    if (PM->APBBMASK.bit.USB_)      { opts.ser.print(" CLK_USB_APB"); }
     opts.ser.println("");
 
     opts.ser.print("APBCMASK: ");
-    PRINTFLAG(PM->APBCMASK, PAC2_);
-    PRINTFLAG(PM->APBCMASK, EVSYS_);
-    PRINTFLAG(PM->APBCMASK, SERCOM0_);
-    PRINTFLAG(PM->APBCMASK, SERCOM1_);
-    PRINTFLAG(PM->APBCMASK, SERCOM2_);
-    PRINTFLAG(PM->APBCMASK, SERCOM3_);
-    PRINTFLAG(PM->APBCMASK, SERCOM4_);
-    PRINTFLAG(PM->APBCMASK, SERCOM5_);
-    PRINTFLAG(PM->APBCMASK, TCC0_);
-    PRINTFLAG(PM->APBCMASK, TCC1_);
-    PRINTFLAG(PM->APBCMASK, TCC2_);
-    PRINTFLAG(PM->APBCMASK, TC3_);
-    PRINTFLAG(PM->APBCMASK, TC4_);
-    PRINTFLAG(PM->APBCMASK, TC5_);
-    PRINTFLAG(PM->APBCMASK, TC6_);
-    PRINTFLAG(PM->APBCMASK, TC7_);
-    PRINTFLAG(PM->APBCMASK, ADC_);
-    PRINTFLAG(PM->APBCMASK, AC_);
-    PRINTFLAG(PM->APBCMASK, DAC_);
-    PRINTFLAG(PM->APBCMASK, PTC_);
-    PRINTFLAG(PM->APBCMASK, I2S_);
-    PRINTFLAG(PM->APBCMASK, AC1_);
-    PRINTFLAG(PM->APBCMASK, LINCTRL_);
+    if (PM->APBCMASK.bit.PAC2_)     { opts.ser.print(" CLK_PAC2_APB"); }
+    if (PM->APBCMASK.bit.EVSYS_)    { opts.ser.print(" CLK_EVSYS_APB"); }
+    if (PM->APBCMASK.bit.SERCOM0_)  { opts.ser.print(" CLK_SERCOM0_APB"); }
+    if (PM->APBCMASK.bit.SERCOM1_)  { opts.ser.print(" CLK_SERCOM1_APB"); }
+    if (PM->APBCMASK.bit.SERCOM2_)  { opts.ser.print(" CLK_SERCOM2_APB"); }
+    if (PM->APBCMASK.bit.SERCOM3_)  { opts.ser.print(" CLK_SERCOM3_APB"); }
+    if (PM->APBCMASK.bit.SERCOM4_)  { opts.ser.print(" CLK_SERCOM4_APB"); }
+    if (PM->APBCMASK.bit.SERCOM5_)  { opts.ser.print(" CLK_SERCOM5_APB"); }
+    if (PM->APBCMASK.bit.TCC0_)     { opts.ser.print(" CLK_TCC0_APB"); }
+    if (PM->APBCMASK.bit.TCC1_)     { opts.ser.print(" CLK_TCC1_APB"); }
+    if (PM->APBCMASK.bit.TCC2_)     { opts.ser.print(" CLK_TCC2_APB"); }
+    if (PM->APBCMASK.bit.TC3_)      { opts.ser.print(" CLK_TC3_APB"); }
+    if (PM->APBCMASK.bit.TC4_)      { opts.ser.print(" CLK_TC4_APB"); }
+    if (PM->APBCMASK.bit.TC5_)      { opts.ser.print(" CLK_TC5_APB"); }
+    if (PM->APBCMASK.bit.TC6_)      { opts.ser.print(" CLK_TC6_APB"); }
+    if (PM->APBCMASK.bit.TC7_)      { opts.ser.print(" CLK_TC7_APB"); }
+    if (PM->APBCMASK.bit.ADC_)      { opts.ser.print(" CLK_ADC_APB"); }
+    if (PM->APBCMASK.bit.AC_)       { opts.ser.print(" CLK_AC_APB"); }
+    if (PM->APBCMASK.bit.DAC_)      { opts.ser.print(" CLK_DAC_APB"); }
+    if (PM->APBCMASK.bit.PTC_)      { opts.ser.print(" CLK_PTC_APB"); }
+    if (PM->APBCMASK.bit.I2S_)      { opts.ser.print(" CLK_I2S_APB"); }
+    if (PM->APBCMASK.bit.AC1_)      { opts.ser.print(" CLK_AC1_APB"); }
+    if (PM->APBCMASK.bit.LINCTRL_)  { opts.ser.print(" CLK_LINCTRL_APB"); }
     opts.ser.println("");
 
     // INTENCLR
@@ -772,9 +782,12 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
         opts.ser.print(":  ");
         bool out = bitRead(PORT->Group[pin.grp].DIR.reg, pin.idx);
         opts.ser.print(out ? "OUT" : "IN");
-        // TODO: only PMUX=B disables digital
+        bool showDigital = true;
         if (PORT->Group[pin.grp].PINCFG[pin.idx].bit.PMUXEN) {
             uint8_t pmux = 0xF & PORT->Group[pin.grp].PMUX[pin.idx / 2].reg >> (4 * (pin.idx % 2));
+            if (pmux == 1) {
+                showDigital = false;
+            }
             opts.ser.print(" PMUX=");
             if (pin.pmux[pmux]) {
                 opts.ser.print(pin.pmux[pmux]);
@@ -782,7 +795,8 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
                 // shouldn't get here so we'll print some debugging
                 PRINTHEX(pmux);
             }
-        } else {
+        }
+        if (showDigital) {
             if (out) {
                 PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], DRVSTR);
             } else {
@@ -798,6 +812,15 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
 
 
 void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
+    if (RTC->MODE0.CTRL.bit.ENABLE || opts.showDisabled) {
+        opts.ser.println("--------------------------- RTC MODE0");
+    }
+    if (! RTC->MODE0.CTRL.bit.ENABLE) {
+        if (opts.showDisabled) {
+            opts.ser.println("--disabled--");
+        }
+        return;
+    }
     opts.ser.print("CTRL:  PRESCALER=");
     PRINTSCALE(mode.CTRL.bit.PRESCALER);
     PRINTFLAG(mode.CTRL, MATCHCLR);
@@ -836,6 +859,15 @@ void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
 
 
 void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
+    if (RTC->MODE1.CTRL.bit.ENABLE || opts.showDisabled) {
+        opts.ser.println("--------------------------- RTC MODE1");
+    }
+    if (! RTC->MODE1.CTRL.bit.ENABLE) {
+        if (opts.showDisabled) {
+            opts.ser.println("--disabled--");
+        }
+        return;
+    }
     opts.ser.print("CTRL:  PRESCALER=");
     PRINTSCALE(mode.CTRL.bit.PRESCALER);
     opts.ser.println("");
@@ -882,6 +914,15 @@ void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
 
 
 void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
+    if (RTC->MODE2.CTRL.bit.ENABLE || opts.showDisabled) {
+        opts.ser.println("--------------------------- RTC MODE2");
+    }
+    if (! RTC->MODE2.CTRL.bit.ENABLE) {
+        if (opts.showDisabled) {
+            opts.ser.println("--disabled--");
+        }
+        return;
+    }
     opts.ser.print("CTRL:  PRESCALER=");
     PRINTSCALE(mode.CTRL.bit.PRESCALER);
     PRINTFLAG(mode.CTRL, CLKREP);
@@ -945,16 +986,6 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
 
 void printZeroRegRTC(ZeroRegOptions &opts) {
     while (RTC->MODE0.CTRL.bit.SWRST || RTC->MODE0.STATUS.bit.SYNCBUSY) {}
-    if (! RTC->MODE0.CTRL.bit.ENABLE) {
-        if (opts.showDisabled) {
-            // TODO -- also skip if mode is disabled
-            opts.ser.println("--------------------------- RTC\n--disabled--");
-        }
-        return;
-    }
-    opts.ser.println("--------------------------- RTC");
-    opts.ser.print("MODE:  ");
-    opts.ser.println(RTC->MODE0.CTRL.bit.MODE);
     switch (RTC->MODE0.CTRL.bit.MODE) {
         case 0x0: printZeroRegRTC_MODE0(opts, RTC->MODE0); break;
         case 0x1: printZeroRegRTC_MODE1(opts, RTC->MODE1); break;

@@ -50,7 +50,7 @@ void printZeroRegGCLK(ZeroRegOptions &opts);
 void printZeroRegI2S(ZeroRegOptions &opts);
 void printZeroRegMTB(ZeroRegOptions &opts);
 void printZeroRegNVMCTRL(ZeroRegOptions &opts);
-void printZeroRegPACs(ZeroRegOptions &opts);
+void printZeroRegPAC(ZeroRegOptions &opts);
 void printZeroRegPM(ZeroRegOptions &opts);
 void printZeroRegPORT(ZeroRegOptions &opts);
 void printZeroRegRTC(ZeroRegOptions &opts);

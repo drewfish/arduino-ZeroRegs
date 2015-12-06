@@ -77,26 +77,37 @@ void printZeroRegEIC_SENSE(ZeroRegOptions &opts, uint8_t sense) {
     }
 }
 void printZeroRegEIC(ZeroRegOptions &opts) {
-    opts.ser.println("--------------------------- EIC");
     while (EIC->STATUS.bit.SYNCBUSY) {}
     if (! EIC->CTRL.bit.ENABLE) {
-        opts.ser.println("--disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("--------------------------- EIC\n--disabled--");
+        }
         return;
     }
+    opts.ser.println("--------------------------- EIC");
 
-    opts.ser.print("NMI: ");
-    printZeroRegEIC_SENSE(opts, EIC->NMICTRL.bit.NMISENSE);
-    if (EIC->NMICTRL.bit.NMIFILTEN) {
-        opts.ser.print(" FILTEN");
+    if (EIC->NMICTRL.bit.NMISENSE) {
+        opts.ser.print("NMI: ");
+        printZeroRegEIC_SENSE(opts, EIC->NMICTRL.bit.NMISENSE);
+        if (EIC->NMICTRL.bit.NMIFILTEN) {
+            opts.ser.print(" FILTEN");
+        }
+        opts.ser.println("");
+    } else {
+        if (opts.showDisabled) {
+            opts.ser.println("NMI: none");
+        }
     }
-    opts.ser.println("");
 
     for (uint8_t extint = 0; extint < 18; extint++) {
-        opts.ser.print(extint);
-        opts.ser.print(": ");
         uint8_t cfg = extint / 8;
         uint8_t pos = (extint % 8) * 4;
         uint32_t entry = 0xF & (EIC->CONFIG[cfg].reg >> pos);
+        if (!opts.showDisabled && (entry & 0x7) == 0) {
+            continue;
+        }
+        opts.ser.print(extint);
+        opts.ser.print(": ");
         printZeroRegEIC_SENSE(opts, 0x7 & entry);
         if (0x8 & entry) {
             opts.ser.print(" FILTEN");
@@ -132,13 +143,18 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
         WRITE8(EVSYS->CHANNEL.reg, chid);
         // FUTURE: better way to wait until write has synchronized
         delay(1);
-        opts.ser.print("CHANNEL ");
-        PRINTHEX(chid);
-        opts.ser.print(":  ");
-        if (EVSYS->CHANNEL.bit.EVGEN == 0) {
-            opts.ser.println("--disabled--");
+        if (EVSYS->CHANNEL.bit.EVGEN || opts.showDisabled) {
+            opts.ser.print("CHANNEL ");
+            PRINTHEX(chid);
+            opts.ser.print(":  ");
+        }
+        if (! EVSYS->CHANNEL.bit.EVGEN) {
+            if (opts.showDisabled) {
+                opts.ser.println("--disabled--");
+            }
             continue;
         }
+
         switch (EVSYS->CHANNEL.bit.PATH) {
             case 0x0: opts.ser.print("SYNC"); break;
             case 0x1: opts.ser.print("RESYNC"); break;
@@ -242,48 +258,52 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
         WRITE8(EVSYS->USER.reg, uid);
         // FUTURE: better way to wait until write has synchronized
         delay(1);
-        opts.ser.print("USER ");
-        switch (uid) {
-            case 0x00: opts.ser.print("DMAC:0"); break;
-            case 0x01: opts.ser.print("DMAC:1"); break;
-            case 0x02: opts.ser.print("DMAC:2"); break;
-            case 0x03: opts.ser.print("DMAC:3"); break;
-            case 0x04: opts.ser.print("TCC0:EV0"); break;
-            case 0x05: opts.ser.print("TCC0:EV1"); break;
-            case 0x06: opts.ser.print("TCC0:MC0"); break;
-            case 0x07: opts.ser.print("TCC0:MC1"); break;
-            case 0x08: opts.ser.print("TCC0:MC2"); break;
-            case 0x09: opts.ser.print("TCC0:MC3"); break;
-            case 0x0A: opts.ser.print("TCC1:EV0"); break;
-            case 0x0B: opts.ser.print("TCC1:EV1"); break;
-            case 0x0C: opts.ser.print("TCC1:MC0"); break;
-            case 0x0D: opts.ser.print("TCC1:MC1"); break;
-            case 0x0E: opts.ser.print("TCC2:EV0"); break;
-            case 0x0F: opts.ser.print("TCC2:EV1"); break;
-            case 0x10: opts.ser.print("TCC2:MC0"); break;
-            case 0x11: opts.ser.print("TCC2:MC1"); break;
-            case 0x12: opts.ser.print("TC3"); break;
-            case 0x13: opts.ser.print("TC4"); break;
-            case 0x14: opts.ser.print("TC5"); break;
-            case 0x15: opts.ser.print("TC6"); break;
-            case 0x16: opts.ser.print("TC7"); break;
-            case 0x17: opts.ser.print("ADC:START"); break;
-            case 0x18: opts.ser.print("ADC:SYNC"); break;
-            case 0x19: opts.ser.print("AC:COMP0"); break;
-            case 0x1A: opts.ser.print("AC:COMP1"); break;
-            case 0x1B: opts.ser.print("DAC:START"); break;
-            case 0x1C: opts.ser.print("PTC:STCONV"); break;
-            case 0x1D: opts.ser.print("AC1:COMP0"); break;
-            case 0x1E: opts.ser.print("AC1:COMP1"); break;
-            /* 0x1F reserved */
+        if (EVSYS->USER.bit.CHANNEL || opts.showDisabled) {
+            opts.ser.print("USER ");
+            switch (uid) {
+                case 0x00: opts.ser.print("DMAC:0"); break;
+                case 0x01: opts.ser.print("DMAC:1"); break;
+                case 0x02: opts.ser.print("DMAC:2"); break;
+                case 0x03: opts.ser.print("DMAC:3"); break;
+                case 0x04: opts.ser.print("TCC0:EV0"); break;
+                case 0x05: opts.ser.print("TCC0:EV1"); break;
+                case 0x06: opts.ser.print("TCC0:MC0"); break;
+                case 0x07: opts.ser.print("TCC0:MC1"); break;
+                case 0x08: opts.ser.print("TCC0:MC2"); break;
+                case 0x09: opts.ser.print("TCC0:MC3"); break;
+                case 0x0A: opts.ser.print("TCC1:EV0"); break;
+                case 0x0B: opts.ser.print("TCC1:EV1"); break;
+                case 0x0C: opts.ser.print("TCC1:MC0"); break;
+                case 0x0D: opts.ser.print("TCC1:MC1"); break;
+                case 0x0E: opts.ser.print("TCC2:EV0"); break;
+                case 0x0F: opts.ser.print("TCC2:EV1"); break;
+                case 0x10: opts.ser.print("TCC2:MC0"); break;
+                case 0x11: opts.ser.print("TCC2:MC1"); break;
+                case 0x12: opts.ser.print("TC3"); break;
+                case 0x13: opts.ser.print("TC4"); break;
+                case 0x14: opts.ser.print("TC5"); break;
+                case 0x15: opts.ser.print("TC6"); break;
+                case 0x16: opts.ser.print("TC7"); break;
+                case 0x17: opts.ser.print("ADC:START"); break;
+                case 0x18: opts.ser.print("ADC:SYNC"); break;
+                case 0x19: opts.ser.print("AC:COMP0"); break;
+                case 0x1A: opts.ser.print("AC:COMP1"); break;
+                case 0x1B: opts.ser.print("DAC:START"); break;
+                case 0x1C: opts.ser.print("PTC:STCONV"); break;
+                case 0x1D: opts.ser.print("AC1:COMP0"); break;
+                case 0x1E: opts.ser.print("AC1:COMP1"); break;
+                /* 0x1F reserved */
+            }
         }
         if (EVSYS->USER.bit.CHANNEL == 0) {
-            opts.ser.print(" --disabled--");
+            if (opts.showDisabled) {
+                opts.ser.println(" --disabled--");
+            }
         } else {
             opts.ser.print(" CHANNEL=");
             PRINTHEX(EVSYS->USER.bit.CHANNEL - 1);
+            opts.ser.println("");
         }
-        opts.ser.println("");
     }
 
     // CHSTATUS
@@ -341,33 +361,41 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
     while (GCLK->CTRL.bit.SWRST || GCLK->STATUS.bit.SYNCBUSY) {}
 
     for (uint8_t gclkid = 0; gclkid < 37; gclkid++) {
-        opts.ser.print("GCLK ");
-        opts.ser.print(gclk_names[gclkid]);
-        opts.ser.print(":");
         // [14.8.3] To read the CLKCTRL register, first do an 8-bit write to the
         // CLKCTRL.ID bit group with the ID of the generic clock whose configuration
         // is to be read, and then read the CLKCTRL register.
         WRITE8(GCLK->CLKCTRL.reg, gclkid);
         while (GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY) {}
+
+        if (GCLK->CLKCTRL.bit.CLKEN || opts.showDisabled) {
+            opts.ser.print("GCLK ");
+            opts.ser.print(gclk_names[gclkid]);
+            opts.ser.print(":");
+        }
         if (GCLK->CLKCTRL.bit.CLKEN) {
             opts.ser.print(" GEN=");
             PRINTHEX(GCLK->CLKCTRL.bit.GEN);
             PRINTFLAG(GCLK->CLKCTRL, WRTLOCK);
+            opts.ser.println("");
         } else {
-            opts.ser.print(" --disabled-- ");
+            if (opts.showDisabled) {
+                opts.ser.println(" --disabled-- ");
+            }
         }
-        opts.ser.println("");
     }
 
     for (uint8_t genid = 0; genid < 0x9; genid++) {
-        opts.ser.print("GEN ");
-        PRINTHEX(genid);
-        opts.ser.print(":  ");
         // [14.8.4] To read the GENCTRL register, first do an 8-bit write to the
         // GENCTRL.ID bit group with the ID of the generic clock generator whose
         // configuration is to be read, and then read the GENCTRL register.
         WRITE8(GCLK->GENCTRL.reg, genid);
         while (GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY) {}
+
+        if (GCLK->GENCTRL.bit.GENEN || opts.showDisabled) {
+            opts.ser.print("GEN ");
+            PRINTHEX(genid);
+            opts.ser.print(":  ");
+        }
         if (GCLK->GENCTRL.bit.GENEN) {
             switch (GCLK->GENCTRL.bit.SRC) {
                 case 0x0: opts.ser.print("XOSC"); break;
@@ -392,10 +420,12 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
             PRINTFLAG(GCLK->GENCTRL, OE);
             PRINTFLAG(GCLK->GENCTRL, DIVSEL);
             PRINTFLAG(GCLK->GENCTRL, RUNSTDBY);
+            opts.ser.println("");
         } else {
-            opts.ser.print(" --disabled--");
+            if (opts.showDisabled) {
+                opts.ser.println(" --disabled--");
+            }
         }
-        opts.ser.println("");
     }
 }
 
@@ -509,47 +539,63 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
 void printZeroRegPAC(ZeroRegOptions &opts) {
     opts.ser.println("--------------------------- PAC");
 
-    opts.ser.print("PAC0: ");
-    if (bitRead(PAC0->WPSET.reg, 1)) opts.ser.print(" PM");
-    if (bitRead(PAC0->WPSET.reg, 2)) opts.ser.print(" SYSCTRL");
-    if (bitRead(PAC0->WPSET.reg, 3)) opts.ser.print(" GCLK");
-    if (bitRead(PAC0->WPSET.reg, 4)) opts.ser.print(" WDT");
-    if (bitRead(PAC0->WPSET.reg, 5)) opts.ser.print(" RTC");
-    if (bitRead(PAC0->WPSET.reg, 6)) opts.ser.print(" EIC");
-    opts.ser.println("");
+    if (PAC0->WPSET.reg || opts.showDisabled) {
+        opts.ser.print("PAC0: ");
+        if (bitRead(PAC0->WPSET.reg, 1)) opts.ser.print(" PM");
+        if (bitRead(PAC0->WPSET.reg, 2)) opts.ser.print(" SYSCTRL");
+        if (bitRead(PAC0->WPSET.reg, 3)) opts.ser.print(" GCLK");
+        if (bitRead(PAC0->WPSET.reg, 4)) opts.ser.print(" WDT");
+        if (bitRead(PAC0->WPSET.reg, 5)) opts.ser.print(" RTC");
+        if (bitRead(PAC0->WPSET.reg, 6)) opts.ser.print(" EIC");
+        opts.ser.println("");
+    }
 
-    opts.ser.print("PAC1: ");
-    if (bitRead(PAC1->WPSET.reg, 1)) opts.ser.print(" DSU");
-    if (bitRead(PAC1->WPSET.reg, 2)) opts.ser.print(" NVMCTRL");
-    if (bitRead(PAC1->WPSET.reg, 3)) opts.ser.print(" PORT");
-    if (bitRead(PAC1->WPSET.reg, 4)) opts.ser.print(" DMAC");
-    if (bitRead(PAC1->WPSET.reg, 5)) opts.ser.print(" USB");
-    if (bitRead(PAC1->WPSET.reg, 6)) opts.ser.print(" MTB");
-    opts.ser.println("");
+    if (PAC1->WPSET.reg || opts.showDisabled) {
+        opts.ser.print("PAC1: ");
+        if (bitRead(PAC1->WPSET.reg, 1)) opts.ser.print(" DSU");
+        if (bitRead(PAC1->WPSET.reg, 2)) opts.ser.print(" NVMCTRL");
+        if (bitRead(PAC1->WPSET.reg, 3)) opts.ser.print(" PORT");
+        if (bitRead(PAC1->WPSET.reg, 4)) opts.ser.print(" DMAC");
+        if (bitRead(PAC1->WPSET.reg, 5)) opts.ser.print(" USB");
+        if (bitRead(PAC1->WPSET.reg, 6)) opts.ser.print(" MTB");
+        opts.ser.println("");
+    }
 
-    opts.ser.print("PAC2: ");
-    if (bitRead(PAC2->WPSET.reg,  1)) opts.ser.print(" EVSYS");
-    if (bitRead(PAC2->WPSET.reg,  2)) opts.ser.print(" SERCOM0");
-    if (bitRead(PAC2->WPSET.reg,  3)) opts.ser.print(" SERCOM1");
-    if (bitRead(PAC2->WPSET.reg,  4)) opts.ser.print(" SERCOM2");
-    if (bitRead(PAC2->WPSET.reg,  5)) opts.ser.print(" SERCOM3");
-    if (bitRead(PAC2->WPSET.reg,  6)) opts.ser.print(" SERCOM4");
-    if (bitRead(PAC2->WPSET.reg,  7)) opts.ser.print(" SERCOM5");
-    if (bitRead(PAC2->WPSET.reg,  8)) opts.ser.print(" TCC0");
-    if (bitRead(PAC2->WPSET.reg,  9)) opts.ser.print(" TCC1");
-    if (bitRead(PAC2->WPSET.reg, 10)) opts.ser.print(" TCC2");
-    if (bitRead(PAC2->WPSET.reg, 11)) opts.ser.print(" TC3");
-    if (bitRead(PAC2->WPSET.reg, 12)) opts.ser.print(" TC4");
-    if (bitRead(PAC2->WPSET.reg, 13)) opts.ser.print(" TC5");
-    if (bitRead(PAC2->WPSET.reg, 14)) opts.ser.print(" TC6");
-    if (bitRead(PAC2->WPSET.reg, 15)) opts.ser.print(" TC7");
-    if (bitRead(PAC2->WPSET.reg, 16)) opts.ser.print(" ADC");
-    if (bitRead(PAC2->WPSET.reg, 17)) opts.ser.print(" AC");
-    if (bitRead(PAC2->WPSET.reg, 18)) opts.ser.print(" DAC");
-    if (bitRead(PAC2->WPSET.reg, 19)) opts.ser.print(" PTC");
-    if (bitRead(PAC2->WPSET.reg, 20)) opts.ser.print(" I2S");
-    if (bitRead(PAC2->WPSET.reg, 21)) opts.ser.print(" AC1");
-    opts.ser.println("");
+    if (PAC2->WPSET.reg || opts.showDisabled) {
+        opts.ser.print("PAC2: ");
+        if (bitRead(PAC2->WPSET.reg,  1)) opts.ser.print(" EVSYS");
+        if (bitRead(PAC2->WPSET.reg,  2)) opts.ser.print(" SERCOM0");
+        if (bitRead(PAC2->WPSET.reg,  3)) opts.ser.print(" SERCOM1");
+        if (bitRead(PAC2->WPSET.reg,  4)) opts.ser.print(" SERCOM2");
+        if (bitRead(PAC2->WPSET.reg,  5)) opts.ser.print(" SERCOM3");
+        if (bitRead(PAC2->WPSET.reg,  6)) opts.ser.print(" SERCOM4");
+        if (bitRead(PAC2->WPSET.reg,  7)) opts.ser.print(" SERCOM5");
+        if (bitRead(PAC2->WPSET.reg,  8)) opts.ser.print(" TCC0");
+        if (bitRead(PAC2->WPSET.reg,  9)) opts.ser.print(" TCC1");
+        if (bitRead(PAC2->WPSET.reg, 10)) opts.ser.print(" TCC2");
+        if (bitRead(PAC2->WPSET.reg, 11)) opts.ser.print(" TC3");
+        if (bitRead(PAC2->WPSET.reg, 12)) opts.ser.print(" TC4");
+        if (bitRead(PAC2->WPSET.reg, 13)) opts.ser.print(" TC5");
+        if (bitRead(PAC2->WPSET.reg, 14)) opts.ser.print(" TC6");
+        if (bitRead(PAC2->WPSET.reg, 15)) opts.ser.print(" TC7");
+        if (bitRead(PAC2->WPSET.reg, 16)) opts.ser.print(" ADC");
+        if (bitRead(PAC2->WPSET.reg, 17)) opts.ser.print(" AC");
+        if (bitRead(PAC2->WPSET.reg, 18)) opts.ser.print(" DAC");
+        if (bitRead(PAC2->WPSET.reg, 19)) opts.ser.print(" PTC");
+        if (bitRead(PAC2->WPSET.reg, 20)) opts.ser.print(" I2S");
+        if (bitRead(PAC2->WPSET.reg, 21)) opts.ser.print(" AC1");
+        if (bitRead(PAC2->WPSET.reg, 22)) opts.ser.print(" 22?");
+        if (bitRead(PAC2->WPSET.reg, 23)) opts.ser.print(" 23?");
+        if (bitRead(PAC2->WPSET.reg, 24)) opts.ser.print(" 24?");
+        if (bitRead(PAC2->WPSET.reg, 25)) opts.ser.print(" 25?");
+        if (bitRead(PAC2->WPSET.reg, 26)) opts.ser.print(" 26?");
+        if (bitRead(PAC2->WPSET.reg, 27)) opts.ser.print(" 27?");
+        if (bitRead(PAC2->WPSET.reg, 28)) opts.ser.print(" 28?");
+        if (bitRead(PAC2->WPSET.reg, 29)) opts.ser.print(" 29?");
+        if (bitRead(PAC2->WPSET.reg, 30)) opts.ser.print(" 30?");
+        if (bitRead(PAC2->WPSET.reg, 31)) opts.ser.print(" 31?");
+        opts.ser.println("");
+    }
 }
 
 
@@ -898,12 +944,15 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
 
 
 void printZeroRegRTC(ZeroRegOptions &opts) {
-    opts.ser.println("--------------------------- RTC");
     while (RTC->MODE0.CTRL.bit.SWRST || RTC->MODE0.STATUS.bit.SYNCBUSY) {}
     if (! RTC->MODE0.CTRL.bit.ENABLE) {
-        opts.ser.println("--disabled--");
+        if (opts.showDisabled) {
+            // TODO -- also skip if mode is disabled
+            opts.ser.println("--------------------------- RTC\n--disabled--");
+        }
         return;
     }
+    opts.ser.println("--------------------------- RTC");
     opts.ser.print("MODE:  ");
     opts.ser.println(RTC->MODE0.CTRL.bit.MODE);
     switch (RTC->MODE0.CTRL.bit.MODE) {
@@ -1203,20 +1252,24 @@ void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
     // DBGCTRL
 }
 void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
-    opts.ser.print("--------------------------- SERCOM");
-    opts.ser.print(idx);
     while (sercom->I2CM.CTRLA.bit.SWRST || sercom->I2CM.SYNCBUSY.reg) {}
     if (! sercom->I2CM.CTRLA.bit.ENABLE) {
-        opts.ser.println("\n--disabled--");
+        if (opts.showDisabled) {
+            opts.ser.print("--------------------------- SERCOM");
+            opts.ser.print(idx);
+            opts.ser.println("\n--disabled--");
+        }
         return;
     }
+    opts.ser.print("--------------------------- SERCOM");
+    opts.ser.print(idx);
     switch (sercom->I2CM.CTRLA.bit.MODE) {
-        case 0x0: opts.ser.println(" USART"); printZeroRegSERCOM_USART(opts, sercom->USART); break;
-        case 0x1: opts.ser.println(" USART"); printZeroRegSERCOM_USART(opts, sercom->USART); break;
-        case 0x2: opts.ser.println(" SPIS");  printZeroRegSERCOM_SPI(opts, sercom->SPI, false); break;
-        case 0x3: opts.ser.println(" SPIM");  printZeroRegSERCOM_SPI(opts, sercom->SPI, true); break;
-        case 0x4: opts.ser.println(" I2CS");  printZeroRegSERCOM_I2CS(opts, sercom->I2CS); break;
-        case 0x5: opts.ser.println(" I2CM");  printZeroRegSERCOM_I2CM(opts, sercom->I2CM); break;
+        case 0x0: opts.ser.println(" USART");       printZeroRegSERCOM_USART(opts, sercom->USART); break;
+        case 0x1: opts.ser.println(" USART");       printZeroRegSERCOM_USART(opts, sercom->USART); break;
+        case 0x2: opts.ser.println(" SPI slave");   printZeroRegSERCOM_SPI(opts, sercom->SPI, false); break;
+        case 0x3: opts.ser.println(" SPI master");  printZeroRegSERCOM_SPI(opts, sercom->SPI, true); break;
+        case 0x4: opts.ser.println(" I2C slave");   printZeroRegSERCOM_I2CS(opts, sercom->I2CS); break;
+        case 0x5: opts.ser.println(" I2C master");  printZeroRegSERCOM_I2CM(opts, sercom->I2CM); break;
     }
 }
 
@@ -1246,8 +1299,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
     PRINTFLAG(SYSCTRL->PCLKSR, DPLLLTO);
     opts.ser.println("");
 
-    opts.ser.print("XOSC: ");
     if (SYSCTRL->XOSC.bit.ENABLE) {
+        opts.ser.print("XOSC: ");
         PRINTFLAG(SYSCTRL->XOSC, XTALEN);
         PRINTFLAG(SYSCTRL->XOSC, RUNSTDBY);
         PRINTFLAG(SYSCTRL->XOSC, ONDEMAND);
@@ -1279,13 +1332,15 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
             case 0xE: opts.ser.print("500ms"); break;
             case 0xF: opts.ser.print("1s"); break;
         }
+        opts.ser.println("");
     } else {
-        opts.ser.print(" --disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("XOSC:  --disabled--");
+        }
     }
-    opts.ser.println("");
 
-    opts.ser.print("XOSC32K: ");
     if (SYSCTRL->XOSC32K.bit.ENABLE) {
+        opts.ser.print("XOSC32K: ");
         PRINTFLAG(SYSCTRL->XOSC32K, XTALEN);
         PRINTFLAG(SYSCTRL->XOSC32K, EN32K);
         PRINTFLAG(SYSCTRL->XOSC32K, EN1K);
@@ -1304,13 +1359,15 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
             case 0x6: opts.ser.print("2000092us"); break;
             case 0x7: opts.ser.print("4000092us"); break;
         }
+        opts.ser.println("");
     } else {
-        opts.ser.print(" --disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("XOSC32K:  --disabled--");
+        }
     }
-    opts.ser.println("");
 
-    opts.ser.print("OSC32K: ");
     if (SYSCTRL->OSC32K.bit.ENABLE) {
+        opts.ser.print("OSC32K: ");
         PRINTFLAG(SYSCTRL->OSC32K, EN32K);
         PRINTFLAG(SYSCTRL->OSC32K, EN1K);
         PRINTFLAG(SYSCTRL->OSC32K, RUNSTDBY);
@@ -1329,10 +1386,12 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         }
         opts.ser.print(" CALIB=");
         PRINTHEX(SYSCTRL->OSC32K.bit.CALIB);
+        opts.ser.println("");
     } else {
-        opts.ser.print(" --disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("OSC32K:  --disabled--");
+        }
     }
-    opts.ser.println("");
 
     opts.ser.print("OSCULP32K: ");
     PRINTFLAG(SYSCTRL->OSCULP32K, WRTLOCK);
@@ -1340,8 +1399,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
     PRINTHEX(SYSCTRL->OSCULP32K.bit.CALIB);
     opts.ser.println("");
 
-    opts.ser.print("OSC8M: ");
     if (SYSCTRL->OSC8M.bit.ENABLE) {
+        opts.ser.print("OSC8M: ");
         PRINTFLAG(SYSCTRL->OSC8M, RUNSTDBY);
         PRINTFLAG(SYSCTRL->OSC8M, ONDEMAND);
         opts.ser.print(" PRESC=");
@@ -1355,13 +1414,15 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
             case 0x2: opts.ser.print("8-11MHz"); break;
             case 0x3: opts.ser.print("11-15MHz"); break;
         }
+        opts.ser.println("");
     } else {
-        opts.ser.print(" --disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("OSC8M:  --disabled--");
+        }
     }
-    opts.ser.println("");
 
-    opts.ser.print("DFLL: ");
     if (SYSCTRL->DFLLCTRL.bit.ENABLE) {
+        opts.ser.print("DFLL: ");
         PRINTFLAG(SYSCTRL->DFLLCTRL, MODE);
         PRINTFLAG(SYSCTRL->DFLLCTRL, STABLE);
         PRINTFLAG(SYSCTRL->DFLLCTRL, LLAW);
@@ -1375,13 +1436,15 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         // DFLLVAL
         // DFLLMUL
         // DFLLSYNC
+        opts.ser.println("");
     } else {
-        opts.ser.print(" --disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("DFLL:  --disabled--");
+        }
     }
-    opts.ser.println("");
 
-    opts.ser.print("BOD33: ");
     if (SYSCTRL->BOD33.bit.ENABLE) {
+        opts.ser.print("BOD33: ");
         PRINTFLAG(SYSCTRL->BOD33, HYST);
         PRINTFLAG(SYSCTRL->BOD33, RUNSTDBY);
         PRINTFLAG(SYSCTRL->BOD33, MODE);
@@ -1396,10 +1459,12 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTSCALE(SYSCTRL->BOD33.bit.PSEL);
         opts.ser.print(" LEVEL=");
         PRINTHEX(SYSCTRL->BOD33.bit.LEVEL);
+        opts.ser.println("");
     } else {
-        opts.ser.print(" --disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("BOD33:  --disabled--");
+        }
     }
-    opts.ser.println("");
 
     opts.ser.print("VREG: ");
     PRINTFLAG(SYSCTRL->VREG, RUNSTDBY);
@@ -1413,17 +1478,19 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
     PRINTHEX(SYSCTRL->VREF.bit.CALIB);
     opts.ser.println("");
 
-    opts.ser.print("DPLL: ");
     if (SYSCTRL->DPLLCTRLA.bit.ENABLE) {
+        opts.ser.print("DPLL: ");
         PRINTFLAG(SYSCTRL->DPLLCTRLA, RUNSTDBY);
         PRINTFLAG(SYSCTRL->DPLLCTRLA, ONDEMAND);
         // DPLLRATIO
         // DPLLCTRLB
         // DPLLSTATUS
+        opts.ser.println("");
     } else {
-        opts.ser.print(" --disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("DPLL:  --disabled--");
+        }
     }
-    opts.ser.println("");
 }
 
 
@@ -1443,12 +1510,14 @@ void printZeroRegUSB(ZeroRegOptions &opts) {
 
 
 void printZeroRegWDT(ZeroRegOptions &opts) {
-    opts.ser.println("--------------------------- WDT");
     while (WDT->STATUS.bit.SYNCBUSY) {}
     if (! WDT->CTRL.bit.ENABLE) {
-        opts.ser.println("--disabled--");
+        if (opts.showDisabled) {
+            opts.ser.println("--------------------------- WDT\n--disabled--");
+        }
         return;
     }
+    opts.ser.println("--------------------------- WDT");
 
     opts.ser.print("CTRL: ");
     PRINTFLAG(WDT->CTRL, WEN);

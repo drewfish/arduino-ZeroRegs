@@ -754,7 +754,7 @@ const Port_Pin port_pins[] = {
     { "LED_RX",         1,  3, { "EIC:3",   "AIN11/Y9",         NULL,           "SERCOM5:1",    "TC6:1",    NULL,       NULL,       NULL } },
     { "LED_TX",         0, 27, { "EIC:15",  NULL,               NULL,           NULL,           NULL,       NULL,       NULL,       "GCLK:0" } },
     { "USB_HOST_EN",    0, 28, { "EIC:8",   NULL,               NULL,           NULL,           NULL,       NULL,       NULL,       "GCLK:0" } },
-    { "USB_DN",         0, 24, { "EIC:12",  NULL,               "SERCOM3:2",    "SERCOM5:2",    "TC5:0",    "TCC1:2",   "USB:DM",   NULL } },
+    { "USB_DM",         0, 24, { "EIC:12",  NULL,               "SERCOM3:2",    "SERCOM5:2",    "TC5:0",    "TCC1:2",   "USB:DM",   NULL } },
     { "USB_DP",         0, 25, { "EIC:13",  NULL,               "SERCOM3:3",    "SERCOM5:3",    "TC5:1",    "TCC1:3",   "USB:DP",   NULL } },
     { "EDBG_TX",        1, 22, { "EIC:6",   NULL,               NULL,           "SERCOM5:2",    "TC7:0",    NULL,       NULL,       "GCLK:0" } },
     { "EDBG_RX",        1, 23, { "EIC:7",   NULL,               NULL,           "SERCOM5:3",    "TC7:1",    NULL,       NULL,       "GCLK:1" } },
@@ -775,19 +775,25 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
     opts.ser.println("--------------------------- PORT");
     for (uint8_t p = 0; p < port_pin_count; p++) {
         const Port_Pin &pin = port_pins[p];
-        opts.ser.print(pin.grp ? "PB" : "PA");     // FUTURE: fix this if/when there's a port C
+        bool dir    = bitRead(PORT->Group[pin.grp].DIR.reg, pin.idx);
+        bool inen   = PORT->Group[pin.grp].PINCFG[pin.idx].bit.INEN;
+        bool pullen = PORT->Group[pin.grp].PINCFG[pin.idx].bit.PULLEN;
+        bool pmuxen = PORT->Group[pin.grp].PINCFG[pin.idx].bit.PMUXEN;
+        bool disabled = !dir && !inen && !pullen && !pmuxen;        // [22.6.3.4] Digital Functionality Disabled
+        if (disabled && !opts.showDisabled) {
+            continue;
+        }
+        opts.ser.print(pin.grp ? "PB" : "PA");      // FUTURE: fix this if/when there's a port C
         PRINTPAD2(pin.idx);
         opts.ser.print(" ");
         opts.ser.print(pin.name);
-        opts.ser.print(":  ");
-        bool out = bitRead(PORT->Group[pin.grp].DIR.reg, pin.idx);
-        opts.ser.print(out ? "OUT" : "IN");
-        bool showDigital = true;
-        if (PORT->Group[pin.grp].PINCFG[pin.idx].bit.PMUXEN) {
+        opts.ser.print(": ");
+        if (disabled) {
+            opts.ser.println(" --disabled--");
+            continue;
+        }
+        if (pmuxen) {
             uint8_t pmux = 0xF & PORT->Group[pin.grp].PMUX[pin.idx / 2].reg >> (4 * (pin.idx % 2));
-            if (pmux == 1) {
-                showDigital = false;
-            }
             opts.ser.print(" PMUX=");
             if (pin.pmux[pmux]) {
                 opts.ser.print(pin.pmux[pmux]);
@@ -795,16 +801,14 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
                 // shouldn't get here so we'll print some debugging
                 PRINTHEX(pmux);
             }
-        }
-        if (showDigital) {
-            if (out) {
-                PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], DRVSTR);
-            } else {
-                PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], INEN);
-                if (PORT->Group[pin.grp].PINCFG[pin.idx].bit.PULLEN) {
-                    opts.ser.print(out ? " PULLUP" : " PULLDOWN");
-                }
+        } else {
+            opts.ser.print(" DIR=");
+            opts.ser.print(dir ? "OUT" : "IN");
+            PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], INEN);
+            if (!dir && pullen) {
+                opts.ser.print(bitRead(PORT->Group[pin.grp].OUT.reg, pin.idx) ? " PULLUP" : " PULLDOWN");
             }
+            PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], DRVSTR);
         }
         opts.ser.println("");
     }

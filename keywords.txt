@@ -1,3 +1,4 @@
+ZeroRegOptions          KEYWORD1
 printZeroRegAC          KEYWORD1
 printZeroRegADC         KEYWORD1
 printZeroRegDAC         KEYWORD1

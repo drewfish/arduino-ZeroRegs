@@ -12,7 +12,8 @@ Simple Example
 void setup() {
     SerialUSB.begin(9600);
     while (! SerialUSB) {}  // wait for serial monitor to attach
-    printZeroRegs(SerialUSB);
+    ZeroRegOptions opts = { SerialUSB, false };
+    printZeroRegs(opts);
 }
 ```
 
@@ -21,95 +22,103 @@ Function Reference
 ------------------
 
 
-### `void printZeroRegs(Stream &ser)`
+### struct ZeroRegOptions
+
+| type | name | description |
+| ---- | ---- | ---- |
+| `Stream&` | `ser` | stream used for printing output |
+| `bool` | `showDisabled` | whether to show itmes which are disabled |
+
+
+### void printZeroRegs(ZeroRegOptions &opts)
 Prints out configuration registers, as many as the library knows how.
 
 
-### `void printZeroRegAC(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegAC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `AC` peripheral.
 
 
-### `void printZeroRegADC(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegADC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `ADC` peripheral.
 
 
-### `void printZeroRegDAC(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegDAC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `DAC` peripheral.
 
 
-### `void printZeroRegDMAC(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegDMAC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `DMAC` peripheral.
 
 
-### `void printZeroRegDSU(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegDSU(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `DSU` peripheral.
 
 
-### `void printZeroRegEIC(Stream &ser)`
+### void printZeroRegEIC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `EIC` peripheral.
 
 
-### `void printZeroRegEVSYS(Stream &ser)`
+### void printZeroRegEVSYS(ZeroRegOptions &opts)
 Prints out the configuration registers for the `EVSYS` peripheral.
 
 
-### `void printZeroRegGCLK(Stream &ser)`
+### void printZeroRegGCLK(ZeroRegOptions &opts)
 Prints out the configuration registers for the `GCLK` peripheral.
 
 
-### `void printZeroRegI2S(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegI2S(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `I2S` peripheral.
 
 
-### `void printZeroRegMTB(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegMTB(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `MTB` peripheral.
 
 
-### `void printZeroRegNVMCTRL(Stream &ser)`
+### void printZeroRegNVMCTRL(ZeroRegOptions &opts)
 Prints out the configuration registers for the `NVMCTRL` peripheral.
 
 
-### `void printZeroRegPACs(Stream &ser)`
+### void printZeroRegPACs(ZeroRegOptions &opts)
 Prints out the configuration registers for the `PAC` peripherals.
 
 
-### `void printZeroRegPM(Stream &ser)`
+### void printZeroRegPM(ZeroRegOptions &opts)
 Prints out the configuration registers for the `PM` peripheral.
 
 
-### `void printZeroRegPORT(Stream &ser)`
+### void printZeroRegPORT(ZeroRegOptions &opts)
 Prints out the configuration registers for the `PORT` peripheral.
 
 
-### `void printZeroRegRTC(Stream &ser)`
+### void printZeroRegRTC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `RTC` peripheral.
 
 
-### `void printZeroRegSBMATRIX(Stream &ser)`
+### void printZeroRegSBMATRIX(ZeroRegOptions &opts)
 Prints out the configuration registers for the `SBMATRIX` peripheral.
 
 
-### `void printZeroRegSERCOM(Stream &ser, Sercom* sercom, uint8_t idx)`
+### void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx)
 Prints out the configuration registers for a `SERCOM` peripheral.
 
 
-### `void printZeroRegSYSCTRL(Stream &ser)`
+### void printZeroRegSYSCTRL(ZeroRegOptions &opts)
 Prints out the configuration registers for the `SYSCTRL` peripheral.
 
 
-### `void printZeroRegTC(Stream &ser, Tc* tc, uint8_t idx)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegTC(ZeroRegOptions &opts, Tc* tc, uint8_t idx) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for a `TC` peripheral.
 
 
-### `void printZeroRegTCC(Stream &ser, Tcc* tcc, uint8_t idx)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegTCC(ZeroRegOptions &opts, Tcc* tcc, uint8_t idx) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for a `TCC` peripheral.
 
 
-### `void printZeroRegUSB(Stream &ser)` -- **NOT YET IMPLEMENTED**
+### void printZeroRegUSB(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
 Prints out the configuration registers for the `USB` peripheral.
 
 
-### `void printZeroRegWDT(Stream &ser)`
+### void printZeroRegWDT(ZeroRegOptions &opts)
 Prints out the configuration registers for the `WDT` peripheral.
 
 

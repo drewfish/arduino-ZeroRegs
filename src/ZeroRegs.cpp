@@ -361,6 +361,7 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
     opts.ser.println("--------------------------- GCLK");
     while (GCLK->CTRL.bit.SWRST || GCLK->STATUS.bit.SYNCBUSY) {}
 
+    opts.ser.println("GCLK_MAIN:  GEN00 (always)");
     for (uint8_t gclkid = 0; gclkid < 37; gclkid++) {
         // [14.8.3] To read the CLKCTRL register, first do an 8-bit write to the
         // CLKCTRL.ID bit group with the ID of the generic clock whose configuration
@@ -395,9 +396,6 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
         if (GCLK->GENCTRL.bit.GENEN || opts.showDisabled) {
             opts.ser.print("GEN");
             PRINTPAD2(genid);
-            if (genid == 0) {
-                opts.ser.print("/GCLK_MAIN");
-            }
             opts.ser.print(":  ");
         }
         if (GCLK->GENCTRL.bit.GENEN) {
@@ -1161,9 +1159,9 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
         case 0x2: opts.ser.print("SPI_ADDR"); break;
         /* 0x3-0xF reserved */
     }
-    opts.ser.print(" CPHA="); opts.ser.print(spi.CTRLA.bit.CPHA ? "CHANGE" : "SAMPLE");
-    opts.ser.print(" CPOL="); opts.ser.print(spi.CTRLA.bit.CPOL ? "FALLING" : "RISING");
-    opts.ser.print(" DORD="); opts.ser.print(spi.CTRLA.bit.CPOL ? "LSB" : "MSB");
+    opts.ser.print(" CPHA="); opts.ser.print(spi.CTRLA.bit.CPHA ? "TRAILING" : "LEADING");
+    opts.ser.print(" CPOL="); opts.ser.print(spi.CTRLA.bit.CPOL ? "HIGH" : "LOW");
+    opts.ser.print(" DORD="); opts.ser.print(spi.CTRLA.bit.DORD ? "LSB" : "MSB");
     opts.ser.println("");
 
     opts.ser.print("CTRLB: ");
@@ -1176,6 +1174,7 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
     PRINTFLAG(spi.CTRLB, PLOADEN);
     PRINTFLAG(spi.CTRLB, SSDE);
     PRINTFLAG(spi.CTRLB, MSSEN);
+    opts.ser.print(" AMODE=");
     switch (spi.CTRLB.bit.AMODE) {
         case 0x0: opts.ser.print("MASK"); break;
         case 0x1: opts.ser.print("2ADDRS"); break;

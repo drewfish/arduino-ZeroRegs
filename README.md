@@ -6,6 +6,7 @@ but not the _status_ registers.
 
 **Intended Audience:** advanced users who have already looked at the SAM D21 datasheet.
 
+[![Build Status](https://travis-ci.org/drewfish/arduino-ZeroRegs.svg?branch=master)](https://travis-ci.org/drewfish/arduino-ZeroRegs)
 
 Examples
 --------

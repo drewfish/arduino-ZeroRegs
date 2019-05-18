@@ -1068,6 +1068,7 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     opts.ser.print("CTRLA: ");
     PRINTFLAG(i2cs.CTRLA, RUNSTDBY);
     PRINTFLAG(i2cs.CTRLA, PINOUT);
+    opts.ser.print(" SDAHOLD=");
     switch (i2cs.CTRLA.bit.SDAHOLD) {
         case 0x0: opts.ser.print("DIS"); break;
         case 0x1: opts.ser.print("75NS"); break;
@@ -1113,6 +1114,7 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     PRINTFLAG(i2cs.ADDR, TENBITEN);
     opts.ser.print(" ADDRMASK=");
     PRINTHEX(i2cs.ADDR.bit.ADDRMASK);
+    opts.ser.println("");
 
     // DATA
 }

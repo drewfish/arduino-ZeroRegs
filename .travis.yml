@@ -9,6 +9,7 @@ cache:
 
 install:
     - pip install -U https://github.com/platformio/platformio-core/archive/develop.zip
+    - pio update
 
 script:
     - ./ci-boards.sh

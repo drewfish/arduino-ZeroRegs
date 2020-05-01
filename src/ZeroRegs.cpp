@@ -1606,8 +1606,12 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegSERCOM(opts, SERCOM1, 1);
     printZeroRegSERCOM(opts, SERCOM2, 2);
     printZeroRegSERCOM(opts, SERCOM3, 3);
+#ifdef SERCOM4
     printZeroRegSERCOM(opts, SERCOM4, 4);
+#endif
+#ifdef SERCOM5
     printZeroRegSERCOM(opts, SERCOM5, 5);
+#endif
     printZeroRegSYSCTRL(opts);
     printZeroRegTCC(opts, TCC0, 0);
     printZeroRegTCC(opts, TCC1, 1);

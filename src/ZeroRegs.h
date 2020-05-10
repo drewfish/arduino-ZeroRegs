@@ -34,7 +34,7 @@ SOFTWARE.
 // This is a wild experiment in API design. The idea is to make it easy to add
 // new configuration options in the future without a long list of arguments.
 struct ZeroRegOptions {
-    Stream  &ser;
+    Print   &out;
     bool    showDisabled;
 };
 

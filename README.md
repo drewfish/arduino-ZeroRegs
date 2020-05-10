@@ -72,7 +72,7 @@ Function Reference
 
 | type | name | description |
 | ---- | ---- | ---- |
-| `Stream&` | `ser` | stream used for printing output |
+| `Print&` | `out` | object used for printing output |
 | `bool` | `showDisabled` | whether to show itmes which are disabled |
 
 

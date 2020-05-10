@@ -26,6 +26,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+NOTE_1:
+    Refers to SAM D21/DA1 Family datasheet revision F (March 2020).
+*/
+
 
 #include "ZeroRegs.h"
 #include <samd.h>
@@ -106,8 +111,8 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
         opts.out.print("EXTINT");
         PRINTPAD2(extint);
         opts.out.print(":  sense=");
-        printZeroRegEIC_SENSE(opts, 0x7 & entry);
-        if (0x8 & entry) {
+        printZeroRegEIC_SENSE(opts, entry & 0x7);
+        if (entry & 0x8) {
             opts.out.print(" FILTEN");
         }
         if (EIC->EVCTRL.vec.EXTINTEO & (1 << extint)) {
@@ -121,6 +126,140 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
 }
 
 
+static const char* ZeroRegsEVSYS_EVGEN00 = "NONE";
+static const char* ZeroRegsEVSYS_EVGEN01 = "RTC:CMP0";
+static const char* ZeroRegsEVSYS_EVGEN02 = "RTC:CMP1";
+static const char* ZeroRegsEVSYS_EVGEN03 = "RTC:OVF";
+static const char* ZeroRegsEVSYS_EVGEN04 = "RTC:PER0";
+static const char* ZeroRegsEVSYS_EVGEN05 = "RTC:PER1";
+static const char* ZeroRegsEVSYS_EVGEN06 = "RTC:PER2";
+static const char* ZeroRegsEVSYS_EVGEN07 = "RTC:PER3";
+static const char* ZeroRegsEVSYS_EVGEN08 = "RTC:PER4";
+static const char* ZeroRegsEVSYS_EVGEN09 = "RTC:PER5";
+static const char* ZeroRegsEVSYS_EVGEN0A = "RTC:PER6";
+static const char* ZeroRegsEVSYS_EVGEN0B = "RTC:PER7";
+static const char* ZeroRegsEVSYS_EVGEN0C = "EIC:0";
+static const char* ZeroRegsEVSYS_EVGEN0D = "EIC:1";
+static const char* ZeroRegsEVSYS_EVGEN0E = "EIC:2";
+static const char* ZeroRegsEVSYS_EVGEN0F = "EIC:3";
+static const char* ZeroRegsEVSYS_EVGEN10 = "EIC:4";
+static const char* ZeroRegsEVSYS_EVGEN11 = "EIC:5";
+static const char* ZeroRegsEVSYS_EVGEN12 = "EIC:6";
+static const char* ZeroRegsEVSYS_EVGEN13 = "EIC:7";
+static const char* ZeroRegsEVSYS_EVGEN14 = "EIC:8";
+static const char* ZeroRegsEVSYS_EVGEN15 = "EIC:9";
+static const char* ZeroRegsEVSYS_EVGEN16 = "EIC:10";
+static const char* ZeroRegsEVSYS_EVGEN17 = "EIC:11";
+static const char* ZeroRegsEVSYS_EVGEN18 = "EIC:12";
+static const char* ZeroRegsEVSYS_EVGEN19 = "EIC:13";
+static const char* ZeroRegsEVSYS_EVGEN1A = "EIC:14";
+static const char* ZeroRegsEVSYS_EVGEN1B = "EIC:15";
+static const char* ZeroRegsEVSYS_EVGEN1C = ZeroRegs__RESERVED;
+static const char* ZeroRegsEVSYS_EVGEN1D = ZeroRegs__RESERVED;
+static const char* ZeroRegsEVSYS_EVGEN1E = "DMAC:0";
+static const char* ZeroRegsEVSYS_EVGEN1F = "DMAC:1";
+static const char* ZeroRegsEVSYS_EVGEN20 = "DMAC:2";
+static const char* ZeroRegsEVSYS_EVGEN21 = "DMAC:3";
+static const char* ZeroRegsEVSYS_EVGEN22 = "TCC0:OVF";
+static const char* ZeroRegsEVSYS_EVGEN23 = "TCC0:TRG";
+static const char* ZeroRegsEVSYS_EVGEN24 = "TCC0:CNT";
+static const char* ZeroRegsEVSYS_EVGEN25 = "TCC0:MC0";
+static const char* ZeroRegsEVSYS_EVGEN26 = "TCC0:MC1";
+static const char* ZeroRegsEVSYS_EVGEN27 = "TCC0:MC2";
+static const char* ZeroRegsEVSYS_EVGEN28 = "TCC0:MC3";
+static const char* ZeroRegsEVSYS_EVGEN29 = "TCC1:OVF";
+static const char* ZeroRegsEVSYS_EVGEN2A = "TCC1:TRG";
+static const char* ZeroRegsEVSYS_EVGEN2B = "TCC1:CNT";
+static const char* ZeroRegsEVSYS_EVGEN2C = "TCC1:MC0";
+static const char* ZeroRegsEVSYS_EVGEN2D = "TCC1:MC1";
+static const char* ZeroRegsEVSYS_EVGEN2E = "TCC2:OVF";
+static const char* ZeroRegsEVSYS_EVGEN2F = "TCC2:TRG";
+static const char* ZeroRegsEVSYS_EVGEN30 = "TCC2:CNT";
+static const char* ZeroRegsEVSYS_EVGEN31 = "TCC2:MC0";
+static const char* ZeroRegsEVSYS_EVGEN32 = "TCC2:MC1";
+static const char* ZeroRegsEVSYS_EVGEN33 = "TC3:OVF";
+static const char* ZeroRegsEVSYS_EVGEN34 = "TC3:MC0";
+static const char* ZeroRegsEVSYS_EVGEN35 = "TC3:MC1";
+static const char* ZeroRegsEVSYS_EVGEN36 = "TC4:OVF";
+static const char* ZeroRegsEVSYS_EVGEN37 = "TC4:MC0";
+static const char* ZeroRegsEVSYS_EVGEN38 = "TC4:MC1";
+static const char* ZeroRegsEVSYS_EVGEN39 = "TC5:OVF";
+static const char* ZeroRegsEVSYS_EVGEN3A = "TC5:MC0";
+static const char* ZeroRegsEVSYS_EVGEN3B = "TC5:MC1";
+static const char* ZeroRegsEVSYS_EVGEN3C = "TC6:OVF";
+static const char* ZeroRegsEVSYS_EVGEN3D = "TC6:MC0";
+static const char* ZeroRegsEVSYS_EVGEN3E = "TC6:MC1";
+static const char* ZeroRegsEVSYS_EVGEN3F = "TC7:OVF";
+static const char* ZeroRegsEVSYS_EVGEN40 = "TC7:MC0";
+static const char* ZeroRegsEVSYS_EVGEN41 = "TC7:MC1";
+static const char* ZeroRegsEVSYS_EVGEN42 = "ADC:RESRDY";
+static const char* ZeroRegsEVSYS_EVGEN43 = "ADC:WINMON";
+static const char* ZeroRegsEVSYS_EVGEN44 = "AC:COMP0";
+static const char* ZeroRegsEVSYS_EVGEN45 = "AC:COMP1";
+static const char* ZeroRegsEVSYS_EVGEN46 = "AC:WIN0";
+static const char* ZeroRegsEVSYS_EVGEN47 = "DAC:EMPTY";
+static const char* ZeroRegsEVSYS_EVGEN48 = "PTC:EOC";
+static const char* ZeroRegsEVSYS_EVGEN49 = "PTC:WCOMP";
+static const char* ZeroRegsEVSYS_EVGEN4A = "AC:COMP2";
+static const char* ZeroRegsEVSYS_EVGEN4B = "AC:COMP3";
+static const char* ZeroRegsEVSYS_EVGEN4C = "AC:WIN1";
+static const char* ZeroRegsEVSYS_EVGEN4D = "TCC3:OVF";
+static const char* ZeroRegsEVSYS_EVGEN4E = "TCC3:TRG";
+static const char* ZeroRegsEVSYS_EVGEN4F = "TCC3:CNT";
+static const char* ZeroRegsEVSYS_EVGEN50 = "TCC3:MC0";
+static const char* ZeroRegsEVSYS_EVGEN51 = "TCC3:MC1";
+static const char* ZeroRegsEVSYS_EVGEN52 = "TCC3:MC2";
+static const char* ZeroRegsEVSYS_EVGEN53 = "TCC3:MC3";
+static const char* ZeroRegsEVSYS_EVGENs[] = {
+    ZeroRegsEVSYS_EVGEN00, ZeroRegsEVSYS_EVGEN01, ZeroRegsEVSYS_EVGEN02, ZeroRegsEVSYS_EVGEN03, ZeroRegsEVSYS_EVGEN04, ZeroRegsEVSYS_EVGEN05, ZeroRegsEVSYS_EVGEN06, ZeroRegsEVSYS_EVGEN07, ZeroRegsEVSYS_EVGEN08, ZeroRegsEVSYS_EVGEN09, ZeroRegsEVSYS_EVGEN0A, ZeroRegsEVSYS_EVGEN0B, ZeroRegsEVSYS_EVGEN0C, ZeroRegsEVSYS_EVGEN0D, ZeroRegsEVSYS_EVGEN0E, ZeroRegsEVSYS_EVGEN0F ,
+    ZeroRegsEVSYS_EVGEN10, ZeroRegsEVSYS_EVGEN11, ZeroRegsEVSYS_EVGEN12, ZeroRegsEVSYS_EVGEN13, ZeroRegsEVSYS_EVGEN14, ZeroRegsEVSYS_EVGEN15, ZeroRegsEVSYS_EVGEN16, ZeroRegsEVSYS_EVGEN17, ZeroRegsEVSYS_EVGEN18, ZeroRegsEVSYS_EVGEN19, ZeroRegsEVSYS_EVGEN1A, ZeroRegsEVSYS_EVGEN1B, ZeroRegsEVSYS_EVGEN1C, ZeroRegsEVSYS_EVGEN1D, ZeroRegsEVSYS_EVGEN1E, ZeroRegsEVSYS_EVGEN1F,
+    ZeroRegsEVSYS_EVGEN20, ZeroRegsEVSYS_EVGEN21, ZeroRegsEVSYS_EVGEN22, ZeroRegsEVSYS_EVGEN23, ZeroRegsEVSYS_EVGEN24, ZeroRegsEVSYS_EVGEN25, ZeroRegsEVSYS_EVGEN26, ZeroRegsEVSYS_EVGEN27, ZeroRegsEVSYS_EVGEN28, ZeroRegsEVSYS_EVGEN29, ZeroRegsEVSYS_EVGEN2A, ZeroRegsEVSYS_EVGEN2B, ZeroRegsEVSYS_EVGEN2C, ZeroRegsEVSYS_EVGEN2D, ZeroRegsEVSYS_EVGEN2E, ZeroRegsEVSYS_EVGEN2F,
+    ZeroRegsEVSYS_EVGEN30, ZeroRegsEVSYS_EVGEN31, ZeroRegsEVSYS_EVGEN32, ZeroRegsEVSYS_EVGEN33, ZeroRegsEVSYS_EVGEN34, ZeroRegsEVSYS_EVGEN35, ZeroRegsEVSYS_EVGEN36, ZeroRegsEVSYS_EVGEN37, ZeroRegsEVSYS_EVGEN38, ZeroRegsEVSYS_EVGEN39, ZeroRegsEVSYS_EVGEN3A, ZeroRegsEVSYS_EVGEN3B, ZeroRegsEVSYS_EVGEN3C, ZeroRegsEVSYS_EVGEN3D, ZeroRegsEVSYS_EVGEN3E, ZeroRegsEVSYS_EVGEN3F,
+    ZeroRegsEVSYS_EVGEN40, ZeroRegsEVSYS_EVGEN41, ZeroRegsEVSYS_EVGEN42, ZeroRegsEVSYS_EVGEN43, ZeroRegsEVSYS_EVGEN44, ZeroRegsEVSYS_EVGEN45, ZeroRegsEVSYS_EVGEN46, ZeroRegsEVSYS_EVGEN47, ZeroRegsEVSYS_EVGEN48, ZeroRegsEVSYS_EVGEN49, ZeroRegsEVSYS_EVGEN4A, ZeroRegsEVSYS_EVGEN4B, ZeroRegsEVSYS_EVGEN4C, ZeroRegsEVSYS_EVGEN4D, ZeroRegsEVSYS_EVGEN4E, ZeroRegsEVSYS_EVGEN4F,
+    ZeroRegsEVSYS_EVGEN50, ZeroRegsEVSYS_EVGEN51, ZeroRegsEVSYS_EVGEN52, ZeroRegsEVSYS_EVGEN53,
+};
+static const char* ZeroRegsEVSYS_USER00 = "DMAC:0";
+static const char* ZeroRegsEVSYS_USER01 = "DMAC:1";
+static const char* ZeroRegsEVSYS_USER02 = "DMAC:2";
+static const char* ZeroRegsEVSYS_USER03 = "DMAC:3";
+static const char* ZeroRegsEVSYS_USER04 = "TCC0:EV0";
+static const char* ZeroRegsEVSYS_USER05 = "TCC0:EV1";
+static const char* ZeroRegsEVSYS_USER06 = "TCC0:MC0";
+static const char* ZeroRegsEVSYS_USER07 = "TCC0:MC1";
+static const char* ZeroRegsEVSYS_USER08 = "TCC0:MC2";
+static const char* ZeroRegsEVSYS_USER09 = "TCC0:MC3";
+static const char* ZeroRegsEVSYS_USER0A = "TCC1:EV0";
+static const char* ZeroRegsEVSYS_USER0B = "TCC1:EV1";
+static const char* ZeroRegsEVSYS_USER0C = "TCC1:MC0";
+static const char* ZeroRegsEVSYS_USER0D = "TCC1:MC1";
+static const char* ZeroRegsEVSYS_USER0E = "TCC2:EV0";
+static const char* ZeroRegsEVSYS_USER0F = "TCC2:EV1";
+static const char* ZeroRegsEVSYS_USER10 = "TCC2:MC0";
+static const char* ZeroRegsEVSYS_USER11 = "TCC2:MC1";
+static const char* ZeroRegsEVSYS_USER12 = "TC3";
+static const char* ZeroRegsEVSYS_USER13 = "TC4";
+static const char* ZeroRegsEVSYS_USER14 = "TC5";
+static const char* ZeroRegsEVSYS_USER15 = "TC6";
+static const char* ZeroRegsEVSYS_USER16 = "TC7";
+static const char* ZeroRegsEVSYS_USER17 = "ADC:START";
+static const char* ZeroRegsEVSYS_USER18 = "ADC:SYNC";
+static const char* ZeroRegsEVSYS_USER19 = "AC:COMP0";
+static const char* ZeroRegsEVSYS_USER1A = "AC:COMP1";
+static const char* ZeroRegsEVSYS_USER1B = "DAC:START";
+static const char* ZeroRegsEVSYS_USER1C = "PTC:STCONV";
+static const char* ZeroRegsEVSYS_USER1D = "AC:COMP2";
+static const char* ZeroRegsEVSYS_USER1E = "AC:COMP3";
+static const char* ZeroRegsEVSYS_USER1F = "TCC3:EV0";
+static const char* ZeroRegsEVSYS_USER20 = "TCC3:EV1";
+static const char* ZeroRegsEVSYS_USER21 = "TCC3:MC0";
+static const char* ZeroRegsEVSYS_USER22 = "TCC3:MC1";
+static const char* ZeroRegsEVSYS_USER23 = "TCC3:MC2";
+static const char* ZeroRegsEVSYS_USER24 = "TCC3:MC3";
+static const char* ZeroRegsEVSYS_USERs[] = {
+    ZeroRegsEVSYS_USER00, ZeroRegsEVSYS_USER01, ZeroRegsEVSYS_USER02, ZeroRegsEVSYS_USER03, ZeroRegsEVSYS_USER04, ZeroRegsEVSYS_USER05, ZeroRegsEVSYS_USER06, ZeroRegsEVSYS_USER07, ZeroRegsEVSYS_USER08, ZeroRegsEVSYS_USER09, ZeroRegsEVSYS_USER0A, ZeroRegsEVSYS_USER0B, ZeroRegsEVSYS_USER0C, ZeroRegsEVSYS_USER0D, ZeroRegsEVSYS_USER0E, ZeroRegsEVSYS_USER0F ,
+    ZeroRegsEVSYS_USER10, ZeroRegsEVSYS_USER11, ZeroRegsEVSYS_USER12, ZeroRegsEVSYS_USER13, ZeroRegsEVSYS_USER14, ZeroRegsEVSYS_USER15, ZeroRegsEVSYS_USER16, ZeroRegsEVSYS_USER17, ZeroRegsEVSYS_USER18, ZeroRegsEVSYS_USER19, ZeroRegsEVSYS_USER1A, ZeroRegsEVSYS_USER1B, ZeroRegsEVSYS_USER1C, ZeroRegsEVSYS_USER1D, ZeroRegsEVSYS_USER1E, ZeroRegsEVSYS_USER1F,
+    ZeroRegsEVSYS_USER20, ZeroRegsEVSYS_USER21, ZeroRegsEVSYS_USER22, ZeroRegsEVSYS_USER23, ZeroRegsEVSYS_USER24,
+};
 void printZeroRegEVSYS(ZeroRegOptions &opts) {
     while (EVSYS->CTRL.bit.SWRST) {}
     opts.out.println("--------------------------- EVSYS");
@@ -130,13 +269,17 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
     PRINTNL();
 
     for (uint8_t chid = 0; chid < 12; chid++) {
-        // [23.8.2] To read from this register, first do an 8-bit write to the
-        // CHANNEL.CHANNEL bit group specifying the channel configuration to be
-        // read, and then read the Channel register (CHANNEL).
+        // [24.6.2.4 NOTE_1] It is possible to read out the configuration of a
+        // channel by first selecting the channel by writing to CHANNEL.CHANNEL
+        // using a, 8-bit write, and then performing a read of the CHANNEL
+        // register.
         WRITE8(EVSYS->CHANNEL.reg, chid);
-        // FUTURE: better way to wait until write has synchronized
+        //FUTURE -- better way to wait until write has synchronized
         delay(1);
         if (!EVSYS->CHANNEL.bit.EVGEN && !opts.showDisabled) {
+            continue;
+        }
+        if (ZeroRegsEVSYS_EVGENs[EVSYS->CHANNEL.bit.EVGEN] == ZeroRegs__RESERVED) {
             continue;
         }
         opts.out.print("CHANNEL");
@@ -147,6 +290,7 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
             case 0x0: opts.out.print("SYNC"); break;
             case 0x1: opts.out.print("RESYNC"); break;
             case 0x2: opts.out.print("ASYNC"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
         }
         opts.out.print(" edgsel");
         switch (EVSYS->CHANNEL.bit.EDGSEL) {
@@ -156,143 +300,35 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
             case 0x3: opts.out.print("BOTH"); break;
         }
         opts.out.print(" evgen=");
-        switch (EVSYS->CHANNEL.bit.EVGEN) {
-            case 0x00: opts.out.print("NONE"); break;
-            case 0x01: opts.out.print("RTC:CMP0"); break;
-            case 0x02: opts.out.print("RTC:CMP1"); break;
-            case 0x03: opts.out.print("RTC:OVF"); break;
-            case 0x04: opts.out.print("RTC:PER0"); break;
-            case 0x05: opts.out.print("RTC:PER1"); break;
-            case 0x06: opts.out.print("RTC:PER2"); break;
-            case 0x07: opts.out.print("RTC:PER3"); break;
-            case 0x08: opts.out.print("RTC:PER4"); break;
-            case 0x09: opts.out.print("RTC:PER5"); break;
-            case 0x0A: opts.out.print("RTC:PER6"); break;
-            case 0x0B: opts.out.print("RTC:PER7"); break;
-            case 0x0C: opts.out.print("EIC:0"); break;
-            case 0x0D: opts.out.print("EIC:1"); break;
-            case 0x0E: opts.out.print("EIC:2"); break;
-            case 0x0F: opts.out.print("EIC:3"); break;
-            case 0x10: opts.out.print("EIC:4"); break;
-            case 0x11: opts.out.print("EIC:5"); break;
-            case 0x12: opts.out.print("EIC:6"); break;
-            case 0x13: opts.out.print("EIC:7"); break;
-            case 0x14: opts.out.print("EIC:8"); break;
-            case 0x15: opts.out.print("EIC:9"); break;
-            case 0x16: opts.out.print("EIC:10"); break;
-            case 0x17: opts.out.print("EIC:11"); break;
-            case 0x18: opts.out.print("EIC:12"); break;
-            case 0x19: opts.out.print("EIC:13"); break;
-            case 0x1A: opts.out.print("EIC:14"); break;
-            case 0x1B: opts.out.print("EIC:15"); break;
-            case 0x1C: /* reserved */ break;
-            case 0x1D: /* reserved */ break;
-            case 0x1E: opts.out.print("DMAC:0"); break;
-            case 0x1F: opts.out.print("DMAC:1"); break;
-            case 0x20: opts.out.print("DMAC:2"); break;
-            case 0x21: opts.out.print("DMAC:3"); break;
-            case 0x22: opts.out.print("TCC0:OVF"); break;
-            case 0x23: opts.out.print("TCC0:TRG"); break;
-            case 0x24: opts.out.print("TCC0:CNT"); break;
-            case 0x25: opts.out.print("TCC0:MC0"); break;
-            case 0x26: opts.out.print("TCC0:MC1"); break;
-            case 0x27: opts.out.print("TCC0:MC2"); break;
-            case 0x28: opts.out.print("TCC0:MC3"); break;
-            case 0x29: opts.out.print("TCC1:OVF"); break;
-            case 0x2A: opts.out.print("TCC1:TRG"); break;
-            case 0x2B: opts.out.print("TCC1:CNT"); break;
-            case 0x2C: opts.out.print("TCC1:MC0"); break;
-            case 0x2D: opts.out.print("TCC1:MC1"); break;
-            case 0x2E: opts.out.print("TCC2:OVF"); break;
-            case 0x2F: opts.out.print("TCC2:TRG"); break;
-            case 0x30: opts.out.print("TCC2:CNT"); break;
-            case 0x31: opts.out.print("TCC2:MC0"); break;
-            case 0x32: opts.out.print("TCC2:MC1"); break;
-            case 0x33: opts.out.print("TC3:OVF"); break;
-            case 0x34: opts.out.print("TC3:MC0"); break;
-            case 0x35: opts.out.print("TC3:MC1"); break;
-            case 0x36: opts.out.print("TC4:OVF"); break;
-            case 0x37: opts.out.print("TC4:MC0"); break;
-            case 0x38: opts.out.print("TC4:MC1"); break;
-            case 0x39: opts.out.print("TC5:OVF"); break;
-            case 0x3A: opts.out.print("TC5:MC0"); break;
-            case 0x3B: opts.out.print("TC5:MC1"); break;
-            case 0x3C: opts.out.print("TC6:OVF"); break;
-            case 0x3D: opts.out.print("TC6:MC0"); break;
-            case 0x3E: opts.out.print("TC6:MC1"); break;
-            case 0x3F: opts.out.print("TC7:OVF"); break;
-            case 0x40: opts.out.print("TC7:MC0"); break;
-            case 0x41: opts.out.print("TC7:MC1"); break;
-            case 0x42: opts.out.print("ADC:RESRDY"); break;
-            case 0x43: opts.out.print("ADC:WINMON"); break;
-            case 0x44: opts.out.print("AC:COMP0"); break;
-            case 0x45: opts.out.print("AC:COMP1"); break;
-            case 0x46: opts.out.print("AC:WIN0"); break;
-            case 0x47: opts.out.print("DAC:EMPTY"); break;
-            case 0x48: opts.out.print("PTC:EOC"); break;
-            case 0x49: opts.out.print("PTC:WCOMP"); break;
-            case 0x4A: opts.out.print("AC1:COMP0"); break;
-            case 0x4B: opts.out.print("AC1:COMP1"); break;
-            case 0x4C: opts.out.print("AC1:WIN0"); break;
-            /* 0x4D-0x7F reserved */
-        }
+        opts.out.print(ZeroRegsEVSYS_EVGENs[EVSYS->CHANNEL.bit.EVGEN]);
         PRINTNL();
     }
 
-    for (uint8_t uid = 0; uid < 0x1F; uid++) {
-        // [23.8.3] To read from this register, first do an 8-bit write to the
-        // USER.USER bit group specifying the event user configuration to be
-        // read, and then read USER.
+    for (uint8_t uid = 0; uid <= 0x24; uid++) {
+        // [24.6.2.3 NOTE_1] It is possible to read out the configuration of a
+        // user by first selecting the user by writing to USER.USER using an
+        // 8-bit write and then performing a read of the 16-bit USER register.
         WRITE8(EVSYS->USER.reg, uid);
-        // FUTURE: better way to wait until write has synchronized
+        //FUTURE -- better way to wait until write has synchronized
         delay(1);
         if (!EVSYS->USER.bit.CHANNEL && !opts.showDisabled) {
             continue;
         }
         opts.out.print("USER");
         PRINTPAD2(uid);
-        opts.out.print(" ");
-        switch (uid) {
-            case 0x00: opts.out.print("DMAC:0"); break;
-            case 0x01: opts.out.print("DMAC:1"); break;
-            case 0x02: opts.out.print("DMAC:2"); break;
-            case 0x03: opts.out.print("DMAC:3"); break;
-            case 0x04: opts.out.print("TCC0:EV0"); break;
-            case 0x05: opts.out.print("TCC0:EV1"); break;
-            case 0x06: opts.out.print("TCC0:MC0"); break;
-            case 0x07: opts.out.print("TCC0:MC1"); break;
-            case 0x08: opts.out.print("TCC0:MC2"); break;
-            case 0x09: opts.out.print("TCC0:MC3"); break;
-            case 0x0A: opts.out.print("TCC1:EV0"); break;
-            case 0x0B: opts.out.print("TCC1:EV1"); break;
-            case 0x0C: opts.out.print("TCC1:MC0"); break;
-            case 0x0D: opts.out.print("TCC1:MC1"); break;
-            case 0x0E: opts.out.print("TCC2:EV0"); break;
-            case 0x0F: opts.out.print("TCC2:EV1"); break;
-            case 0x10: opts.out.print("TCC2:MC0"); break;
-            case 0x11: opts.out.print("TCC2:MC1"); break;
-            case 0x12: opts.out.print("TC3"); break;
-            case 0x13: opts.out.print("TC4"); break;
-            case 0x14: opts.out.print("TC5"); break;
-            case 0x15: opts.out.print("TC6"); break;
-            case 0x16: opts.out.print("TC7"); break;
-            case 0x17: opts.out.print("ADC:START"); break;
-            case 0x18: opts.out.print("ADC:SYNC"); break;
-            case 0x19: opts.out.print("AC:COMP0"); break;
-            case 0x1A: opts.out.print("AC:COMP1"); break;
-            case 0x1B: opts.out.print("DAC:START"); break;
-            case 0x1C: opts.out.print("PTC:STCONV"); break;
-            case 0x1D: opts.out.print("AC1:COMP0"); break;
-            case 0x1E: opts.out.print("AC1:COMP1"); break;
-                       /* 0x1F reserved */
-        }
         opts.out.print(":  ");
+        opts.out.print(ZeroRegsEVSYS_USERs[uid]);
+        if (ZeroRegsEVSYS_USERs[uid] == ZeroRegs__RESERVED) {
+            PRINTNL();
+            continue;
+        }
         if (EVSYS->USER.bit.CHANNEL == 0) {
+            opts.out.print(" ");
             opts.out.println(ZeroRegs__DISABLED);
         } else {
-            opts.out.print("CHANNEL");
+            opts.out.print(" CHANNEL=");
             PRINTPAD2(EVSYS->USER.bit.CHANNEL - 1);
-            opts.out.println(ZeroRegs__empty);
+            PRINTNL();
         }
     }
 }
@@ -1451,6 +1487,9 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegTCC(opts, TCC0, 0);
     printZeroRegTCC(opts, TCC1, 1);
     printZeroRegTCC(opts, TCC2, 2);
+#ifdef TCC3
+    printZeroRegTCC(opts, TCC3, 3);
+#endif
     printZeroRegTC(opts, TC3, 3);
     printZeroRegTC(opts, TC4, 4);
     printZeroRegTC(opts, TC5, 5);

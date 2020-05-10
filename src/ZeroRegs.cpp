@@ -1474,20 +1474,27 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
 
 
 void printZeroRegs(ZeroRegOptions &opts) {
+    // show clocking system
+    printZeroRegGCLK(opts);
+    printZeroRegSYSCTRL(opts);
+
+    // show core peripherals
+    printZeroRegDMAC(opts);
+    printZeroRegEVSYS(opts);
+    printZeroRegPAC(opts);
+    printZeroRegPM(opts);
+    //printZeroRegSBMATRIX(opts);    // questionable value
+    printZeroRegWDT(opts);
+
+    // show other peripherals
     printZeroRegAC(opts);
     printZeroRegADC(opts);
     printZeroRegDAC(opts);
-    printZeroRegDMAC(opts);
     printZeroRegEIC(opts);
-    printZeroRegEVSYS(opts);
-    printZeroRegGCLK(opts);
     printZeroRegI2S(opts);
     printZeroRegNVMCTRL(opts);
-    printZeroRegPAC(opts);
-    printZeroRegPM(opts);
     printZeroRegPORT(opts);
     printZeroRegRTC(opts);
-    //printZeroRegSBMATRIX(opts);    // questionable value
     printZeroRegSERCOM(opts, SERCOM0, 0);
     printZeroRegSERCOM(opts, SERCOM1, 1);
     printZeroRegSERCOM(opts, SERCOM2, 2);
@@ -1498,7 +1505,6 @@ void printZeroRegs(ZeroRegOptions &opts) {
 #ifdef SERCOM5
     printZeroRegSERCOM(opts, SERCOM5, 5);
 #endif
-    printZeroRegSYSCTRL(opts);
     printZeroRegTCC(opts, TCC0, 0);
     printZeroRegTCC(opts, TCC1, 1);
     printZeroRegTCC(opts, TCC2, 2);
@@ -1506,7 +1512,6 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegTC(opts, TC4, 4);
     printZeroRegTC(opts, TC5, 5);
     printZeroRegUSB(opts);
-    printZeroRegWDT(opts);
 }
 
 

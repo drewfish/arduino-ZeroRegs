@@ -931,29 +931,6 @@ void printZeroRegRTC(ZeroRegOptions &opts) {
 }
 
 
-void printZeroRegSBMATRIX(ZeroRegOptions &opts) {
-    opts.out.println("--------------------------- SBMATRIX");
-    for (uint8_t i = 0; i < 16; i++) {
-        opts.out.print("PRS ");
-        PRINTHEX(i);
-        opts.out.print(":  ");
-        opts.out.print(SBMATRIX->Prs[i].PRAS.reg, BIN);
-        opts.out.print(" ");
-        opts.out.print(SBMATRIX->Prs[i].PRBS.reg, BIN);
-        opts.out.println("");
-    }
-    for (uint8_t i = 0; i < 16; i++) {
-        opts.out.print("SFR ");
-        PRINTHEX(i);
-        opts.out.print(":  ");
-        opts.out.print(SBMATRIX->SFR[i].reg, BIN);
-        opts.out.print(" ");
-        opts.out.print(SBMATRIX->SFR[i].reg, BIN);
-        opts.out.println("");
-    }
-}
-
-
 void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
     opts.out.print("CTRLA: ");
     PRINTFLAG(i2cm.CTRLA, RUNSTDBY);
@@ -1483,7 +1460,6 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegEVSYS(opts);
     printZeroRegPAC(opts);
     printZeroRegPM(opts);
-    //printZeroRegSBMATRIX(opts);    // questionable value
     printZeroRegWDT(opts);
 
     // show other peripherals

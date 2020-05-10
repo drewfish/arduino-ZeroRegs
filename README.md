@@ -227,10 +227,6 @@ MASK:  SS
 ```
 
 
-### void printZeroRegSBMATRIX(ZeroRegOptions &opts)
-Prints out the configuration registers for the `SBMATRIX` peripheral.
-
-
 ### void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx)
 Prints out the configuration registers for a `SERCOM` peripheral.
 

@@ -52,7 +52,6 @@ void printZeroRegPAC(ZeroRegOptions &opts);
 void printZeroRegPM(ZeroRegOptions &opts);
 void printZeroRegPORT(ZeroRegOptions &opts);
 void printZeroRegRTC(ZeroRegOptions &opts);
-void printZeroRegSBMATRIX(ZeroRegOptions &opts);
 void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx);
 void printZeroRegSYSCTRL(ZeroRegOptions &opts);
 void printZeroRegTC(ZeroRegOptions &opts, Tc* tc, uint8_t idx);

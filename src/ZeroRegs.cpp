@@ -116,11 +116,6 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
         }
         opts.out.println("");
     }
-
-    // NMIFLAG
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
 }
 
 
@@ -297,17 +292,12 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
             if (EVSYS->USER.bit.CHANNEL == 0) {
                 opts.out.println("--disabled--");
             } else {
-                opts.out.print("CHANNEL=");
+                opts.out.print("CHANNEL");
                 PRINTPAD2(EVSYS->USER.bit.CHANNEL - 1);
                 opts.out.println("");
             }
         }
     }
-
-    // CHSTATUS
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
 }
 
 
@@ -441,13 +431,10 @@ void printZeroRegI2S(ZeroRegOptions &opts) {
 void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- NVMCTRL");
 
-    // CTRLA
-
     opts.out.print("CTRLB: ");
-    PRINTFLAG(NVMCTRL->CTRLB, MANW);
-    PRINTFLAG(NVMCTRL->CTRLB, CACHEDIS);
     opts.out.print(" RWS=");
     opts.out.print(NVMCTRL->CTRLB.bit.RWS);
+    PRINTFLAG(NVMCTRL->CTRLB, MANW);
     opts.out.print(" sleepprm=");
     switch (NVMCTRL->CTRLB.bit.SLEEPPRM) {
         case 0x0: opts.out.print("WAKEONACCESS"); break;
@@ -461,6 +448,7 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
         case 0x1: opts.out.print("LOW_POWER"); break;
         case 0x2: opts.out.print("DETERMINISTIC"); break;
     }
+    PRINTFLAG(NVMCTRL->CTRLB, CACHEDIS);
     opts.out.println("");
 
     opts.out.print("PARAM:  NVMP=");
@@ -468,21 +456,6 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     opts.out.print(" psz=");
     opts.out.print(1 << (3 + NVMCTRL->PARAM.bit.PSZ));
     opts.out.println("");
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-
-    opts.out.print("STATUS: ");
-    PRINTFLAG(NVMCTRL->STATUS, PRM);
-    PRINTFLAG(NVMCTRL->STATUS, LOAD);
-    PRINTFLAG(NVMCTRL->STATUS, PROGE);
-    PRINTFLAG(NVMCTRL->STATUS, LOCKE);
-    PRINTFLAG(NVMCTRL->STATUS, NVME);
-    PRINTFLAG(NVMCTRL->STATUS, SB);
-    opts.out.println("");
-
-    // ADDR
 
     opts.out.print("LOCK:  ");
     opts.out.println(NVMCTRL->LOCK.reg, BIN);
@@ -598,8 +571,6 @@ void printZeroRegPAC(ZeroRegOptions &opts) {
 void printZeroRegPM(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- PM");
 
-    // CTRL
-
     opts.out.print("SLEEP:  idle=");
     switch(PM->SLEEP.bit.IDLE) {
         case 0x0: opts.out.print("CPU"); break;
@@ -675,19 +646,6 @@ void printZeroRegPM(ZeroRegOptions &opts) {
     if (PM->APBCMASK.bit.DAC_)      { opts.out.print(" CLK_DAC_APB"); }
     if (PM->APBCMASK.bit.PTC_)      { opts.out.print(" CLK_PTC_APB"); }
     if (PM->APBCMASK.bit.I2S_)      { opts.out.print(" CLK_I2S_APB"); }
-    opts.out.println("");
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-
-    opts.out.print("RCAUSE: ");
-    PRINTFLAG(PM->RCAUSE, POR);
-    PRINTFLAG(PM->RCAUSE, BOD12);
-    PRINTFLAG(PM->RCAUSE, BOD33);
-    PRINTFLAG(PM->RCAUSE, EXT);
-    if (PM->RCAUSE.reg & PM_RCAUSE_WDT) opts.out.print(" WDT");
-    PRINTFLAG(PM->RCAUSE, SYST);
     opts.out.println("");
 }
 
@@ -829,11 +787,6 @@ void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
     PRINTFLAG(mode.EVCTRL, OVFEO);
     opts.out.println("");
 
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-    // DBGCTRL
-
     opts.out.print("FREQCORR:  ");
     PRINTHEX(mode.FREQCORR.reg);
     opts.out.println("");
@@ -875,11 +828,6 @@ void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
     PRINTFLAG(mode.EVCTRL, CMPEO1);
     PRINTFLAG(mode.EVCTRL, OVFEO);
     opts.out.println("");
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-    // DBGCTRL
 
     opts.out.print("FREQCORR:  ");
     PRINTHEX(mode.FREQCORR.reg);
@@ -931,11 +879,6 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
     PRINTFLAG(mode.EVCTRL, ALARMEO0);
     PRINTFLAG(mode.EVCTRL, OVFEO);
     opts.out.println("");
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-    // DBGCTRL
 
     opts.out.print("FREQCORR:  ");
     PRINTHEX(mode.FREQCORR.reg);
@@ -1045,14 +988,6 @@ void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
     opts.out.print("BAUD:  ");
     PRINTHEX(i2cm.BAUD.reg);  // FUTURE
     opts.out.println("");
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-    // STATUS
-    // ADDR
-    // DATA
-    // DBGCTRL
 }
 void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     opts.out.print("CTRLA: ");
@@ -1092,11 +1027,6 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     }
     opts.out.println("");
 
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-    // STATUS
-
     opts.out.print("ADDR: ");
     PRINTFLAG(i2cs.ADDR, GENCEN);
     opts.out.print(" ADDR=");
@@ -1105,8 +1035,6 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     opts.out.print(" ADDRMASK=");
     PRINTHEX(i2cs.ADDR.bit.ADDRMASK);
     opts.out.println("");
-
-    // DATA
 }
 void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
     opts.out.print("CTRLA: ");
@@ -1173,12 +1101,6 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
     PRINTHEX(spi.BAUD.reg);   // FUTURE
     opts.out.println("");
 
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-    // STATUS
-    // SYNCBUSY
-
     if (spi.CTRLA.bit.FORM == 0x2) {
         opts.out.print("ADDR: ");
         opts.out.print(" ADDR=");
@@ -1187,8 +1109,6 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
         PRINTHEX(spi.ADDR.bit.ADDRMASK);
         opts.out.println("");
     }
-
-    // DATA
 }
 void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
     opts.out.print("CTRLA: ");
@@ -1263,13 +1183,6 @@ void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
         PRINTHEX(usart.RXPL.reg);
         opts.out.println("");
     }
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-    // STATUS
-    // DATA
-    // DBGCTRL
 }
 void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
     while (sercom->I2CM.CTRLA.bit.SWRST || sercom->I2CM.SYNCBUSY.reg) {}
@@ -1296,28 +1209,6 @@ void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
 
 void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- SYSCTRL");
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
-
-    opts.out.print("PCLKSR: ");
-    PRINTFLAG(SYSCTRL->PCLKSR, XOSCRDY);
-    PRINTFLAG(SYSCTRL->PCLKSR, XOSC32KRDY);
-    PRINTFLAG(SYSCTRL->PCLKSR, OSC32KRDY);
-    PRINTFLAG(SYSCTRL->PCLKSR, OSC8MRDY);
-    PRINTFLAG(SYSCTRL->PCLKSR, DFLLRDY);
-    PRINTFLAG(SYSCTRL->PCLKSR, DFLLOOB);
-    PRINTFLAG(SYSCTRL->PCLKSR, DFLLLCKF);
-    PRINTFLAG(SYSCTRL->PCLKSR, DFLLLCKC);
-    PRINTFLAG(SYSCTRL->PCLKSR, DFLLRCS);
-    PRINTFLAG(SYSCTRL->PCLKSR, BOD33RDY);
-    PRINTFLAG(SYSCTRL->PCLKSR, BOD33DET);
-    PRINTFLAG(SYSCTRL->PCLKSR, B33SRDY);
-    PRINTFLAG(SYSCTRL->PCLKSR, DPLLLCKR);
-    PRINTFLAG(SYSCTRL->PCLKSR, DPLLLCKF);
-    PRINTFLAG(SYSCTRL->PCLKSR, DPLLLTO);
-    opts.out.println("");
 
     if (SYSCTRL->XOSC.bit.ENABLE) {
         opts.out.print("XOSC: ");
@@ -1453,9 +1344,6 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTFLAG(SYSCTRL->DFLLCTRL, QLDIS);
         PRINTFLAG(SYSCTRL->DFLLCTRL, BPLCKC);
         PRINTFLAG(SYSCTRL->DFLLCTRL, WAITLOCK);
-        // DFLLVAL
-        // DFLLMUL
-        // DFLLSYNC
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
@@ -1502,9 +1390,6 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.print("DPLL: ");
         PRINTFLAG(SYSCTRL->DPLLCTRLA, RUNSTDBY);
         PRINTFLAG(SYSCTRL->DPLLCTRLA, ONDEMAND);
-        // DPLLRATIO
-        // DPLLCTRLB
-        // DPLLSTATUS
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
@@ -1553,10 +1438,6 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
     opts.out.print("EWCTRL:  ewoffset=");
     PRINTSCALE(3 + WDT->EWCTRL.bit.EWOFFSET);
     opts.out.println("");
-
-    // INTENCLR
-    // INTENSET
-    // INTFLAG
 
     opts.out.print("NVM user row: ");
     opts.out.print(" ENABLE=");

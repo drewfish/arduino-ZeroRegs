@@ -31,14 +31,19 @@ SOFTWARE.
 #include <samd.h>
 
 
+static const char* ZeroRegs__DISABLED = "--disabled--";
+static const char* ZeroRegs__RESERVED = "--reserved--";
+static const char* ZeroRegs__UNKNOWN = "--unknown--";
+static const char* ZeroRegs__empty = "";
 #define PRINTFLAG(x,y) do { if (x.bit.y) { opts.out.print(" " #y); } } while(0)
 #define PRINTHEX(x) do { opts.out.print("0x"); opts.out.print(x, HEX); } while(0)
-#define PRINTSCALE(x) (opts.out.print(1 << (x)))
+#define PRINTNL() opts.out.println(ZeroRegs__empty)
 #define PRINTPAD2(x) do { if (x < 10) { opts.out.print("0"); } opts.out.print(x, DEC); } while(0)
-#define WRITE8(x,y) *((uint8_t*)&(x)) = uint8_t(y)
-#define READFUSE(x,y) ((*((uint32_t *) x##_FUSES_##y##_ADDR) & x##_FUSES_##y##_Msk) >> x##_FUSES_##y##_Pos)
+#define PRINTSCALE(x) (opts.out.print(1 << (x)))
 #define READ2FUSES(x,y,o) ( ((*((uint32_t *) x##_FUSES_##y##_0_ADDR) & x##_FUSES_##y##_0_Msk) >> x##_FUSES_##y##_0_Pos) | (((*((uint32_t *) x##_FUSES_##y##_1_ADDR) & x##_FUSES_##y##_1_Msk) >> x##_FUSES_##y##_1_Pos) << o))
 #define READADDR32(x) (*((uint32_t*)(x)))
+#define READFUSE(x,y) ((*((uint32_t *) x##_FUSES_##y##_ADDR) & x##_FUSES_##y##_Msk) >> x##_FUSES_##y##_Pos)
+#define WRITE8(x,y) *((uint8_t*)&(x)) = uint8_t(y)
 
 
 void printZeroRegAC(ZeroRegOptions &opts) {
@@ -75,7 +80,8 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
     while (EIC->STATUS.bit.SYNCBUSY) {}
     if (! EIC->CTRL.bit.ENABLE) {
         if (opts.showDisabled) {
-            opts.out.println("--------------------------- EIC\n--disabled--");
+            opts.out.println("--------------------------- EIC");
+            opts.out.println(ZeroRegs__DISABLED);
         }
         return;
     }
@@ -141,7 +147,7 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
         }
         if (! EVSYS->CHANNEL.bit.EVGEN) {
             if (opts.showDisabled) {
-                opts.out.println("--disabled--");
+                opts.out.println(ZeroRegs__DISABLED);
             }
             continue;
         }
@@ -290,7 +296,7 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
             }
             opts.out.print(":  ");
             if (EVSYS->USER.bit.CHANNEL == 0) {
-                opts.out.println("--disabled--");
+                opts.out.println(ZeroRegs__DISABLED);
             } else {
                 opts.out.print("CHANNEL");
                 PRINTPAD2(EVSYS->USER.bit.CHANNEL - 1);
@@ -366,7 +372,8 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
                 PRINTFLAG(GCLK->CLKCTRL, WRTLOCK);
                 opts.out.println("");
             } else {
-                opts.out.println(" --disabled--");
+                opts.out.print(" ");
+                opts.out.println(ZeroRegs__DISABLED);
             }
         }
     }
@@ -416,7 +423,7 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
             opts.out.println("");
         } else {
             if (opts.showDisabled) {
-                opts.out.println("--disabled--");
+                opts.out.println(ZeroRegs__DISABLED);
             }
         }
     }
@@ -729,7 +736,8 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
         opts.out.print(pin.name);
         opts.out.print(": ");
         if (disabled) {
-            opts.out.println(" --disabled--");
+            opts.out.print(" ");
+            opts.out.println(ZeroRegs__DISABLED);
             continue;
         }
         if (pmuxen) {
@@ -761,7 +769,7 @@ void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
     }
     if (! RTC->MODE0.CTRL.bit.ENABLE) {
         if (opts.showDisabled) {
-            opts.out.println("--disabled--");
+            opts.out.println(ZeroRegs__DISABLED);
         }
         return;
     }
@@ -803,7 +811,7 @@ void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
     }
     if (! RTC->MODE1.CTRL.bit.ENABLE) {
         if (opts.showDisabled) {
-            opts.out.println("--disabled--");
+            opts.out.println(ZeroRegs__DISABLED);
         }
         return;
     }
@@ -853,7 +861,7 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
     }
     if (! RTC->MODE2.CTRL.bit.ENABLE) {
         if (opts.showDisabled) {
-            opts.out.println("--disabled--");
+            opts.out.println(ZeroRegs__DISABLED);
         }
         return;
     }
@@ -1189,8 +1197,8 @@ void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
     if (! sercom->I2CM.CTRLA.bit.ENABLE) {
         if (opts.showDisabled) {
             opts.out.print("--------------------------- SERCOM");
-            opts.out.print(idx);
-            opts.out.println("\n--disabled--");
+            opts.out.println(idx);
+            opts.out.println(ZeroRegs__DISABLED);
         }
         return;
     }
@@ -1209,6 +1217,7 @@ void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
 
 void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- SYSCTRL");
+    //FUTURE -- reorder to better illustrate system versus subperipheral
 
     if (SYSCTRL->XOSC.bit.ENABLE) {
         opts.out.print("XOSC: ");
@@ -1246,7 +1255,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
-            opts.out.println("XOSC:  --disabled--");
+            opts.out.print("XOSC:  ");
+            opts.out.println(ZeroRegs__DISABLED);
         }
     }
 
@@ -1273,7 +1283,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
-            opts.out.println("XOSC32K:  --disabled--");
+            opts.out.print("XOSC32K:  ");
+            opts.out.println(ZeroRegs__DISABLED);
         }
     }
 
@@ -1300,7 +1311,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
-            opts.out.println("OSC32K:  --disabled--");
+            opts.out.print("OSC32K:  ");
+            opts.out.println(ZeroRegs__DISABLED);
         }
     }
 
@@ -1328,7 +1340,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
-            opts.out.println("OSC8M:  --disabled--");
+            opts.out.print("OSC8M:  ");
+            opts.out.println(ZeroRegs__DISABLED);
         }
     }
 
@@ -1347,7 +1360,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
-            opts.out.println("DFLL:  --disabled--");
+            opts.out.print("DFLL:  ");
+            opts.out.println(ZeroRegs__DISABLED);
         }
     }
 
@@ -1370,7 +1384,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
-            opts.out.println("BOD33:  --disabled--");
+            opts.out.print("BOD33:  ");
+            opts.out.println(ZeroRegs__DISABLED);
         }
     }
 
@@ -1393,7 +1408,8 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.out.println("");
     } else {
         if (opts.showDisabled) {
-            opts.out.println("DPLL:  --disabled--");
+            opts.out.print("DPLL:  ");
+            opts.out.println(ZeroRegs__DISABLED);
         }
     }
 }
@@ -1418,7 +1434,8 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
     while (WDT->STATUS.bit.SYNCBUSY) {}
     if (! WDT->CTRL.bit.ENABLE) {
         if (opts.showDisabled) {
-            opts.out.println("--------------------------- WDT\n--disabled--");
+            opts.out.println("--------------------------- WDT");
+            opts.out.println(ZeroRegs__DISABLED);
         }
         return;
     }

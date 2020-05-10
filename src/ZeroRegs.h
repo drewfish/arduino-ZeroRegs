@@ -43,7 +43,6 @@ void printZeroRegAC(ZeroRegOptions &opts);
 void printZeroRegADC(ZeroRegOptions &opts);
 void printZeroRegDAC(ZeroRegOptions &opts);
 void printZeroRegDMAC(ZeroRegOptions &opts);
-void printZeroRegDSU(ZeroRegOptions &opts);
 void printZeroRegEIC(ZeroRegOptions &opts);
 void printZeroRegEVSYS(ZeroRegOptions &opts);
 void printZeroRegGCLK(ZeroRegOptions &opts);

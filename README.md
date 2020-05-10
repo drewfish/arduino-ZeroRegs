@@ -96,10 +96,6 @@ Prints out the configuration registers for the `DAC` peripheral.
 Prints out the configuration registers for the `DMAC` peripheral.
 
 
-### void printZeroRegDSU(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
-Prints out the configuration registers for the `DSU` peripheral.
-
-
 ### void printZeroRegEIC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `EIC` peripheral.
 

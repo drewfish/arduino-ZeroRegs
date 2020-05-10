@@ -3,7 +3,6 @@ printZeroRegAC	KEYWORD1
 printZeroRegADC	KEYWORD1
 printZeroRegDAC	KEYWORD1
 printZeroRegDMAC	KEYWORD1
-printZeroRegDSU	KEYWORD1
 printZeroRegEIC	KEYWORD1
 printZeroRegEVSYS	KEYWORD1
 printZeroRegGCLK	KEYWORD1

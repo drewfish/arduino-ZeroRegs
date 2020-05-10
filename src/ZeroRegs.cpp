@@ -61,11 +61,6 @@ void printZeroRegDMAC(ZeroRegOptions &opts) {
 }
 
 
-void printZeroRegDSU(ZeroRegOptions &opts) {
-    // FUTURE
-}
-
-
 void printZeroRegEIC_SENSE(ZeroRegOptions &opts, uint8_t sense) {
     switch (sense) {
         case 0x0: opts.out.print("none"); break;
@@ -1585,7 +1580,6 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegADC(opts);
     printZeroRegDAC(opts);
     printZeroRegDMAC(opts);
-    printZeroRegDSU(opts);
     printZeroRegEIC(opts);
     printZeroRegEVSYS(opts);
     printZeroRegGCLK(opts);

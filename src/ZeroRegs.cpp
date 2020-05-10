@@ -87,7 +87,7 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
     opts.ser.println("--------------------------- EIC");
 
     if (EIC->NMICTRL.bit.NMISENSE) {
-        opts.ser.print("NMI:  ");
+        opts.ser.print("NMI:  sense=");
         printZeroRegEIC_SENSE(opts, EIC->NMICTRL.bit.NMISENSE);
         if (EIC->NMICTRL.bit.NMIFILTEN) {
             opts.ser.print(" FILTEN");
@@ -108,7 +108,7 @@ void printZeroRegEIC(ZeroRegOptions &opts) {
         }
         opts.ser.print("EXTINT");
         PRINTPAD2(extint);
-        opts.ser.print(":  ");
+        opts.ser.print(":  sense=");
         printZeroRegEIC_SENSE(opts, 0x7 & entry);
         if (0x8 & entry) {
             opts.ser.print(" FILTEN");
@@ -147,7 +147,7 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
         if (EVSYS->CHANNEL.bit.EVGEN || opts.showDisabled) {
             opts.ser.print("CHANNEL");
             PRINTPAD2(chid);
-            opts.ser.print(":  ");
+            opts.ser.print(": ");
         }
         if (! EVSYS->CHANNEL.bit.EVGEN) {
             if (opts.showDisabled) {
@@ -156,19 +156,20 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
             continue;
         }
 
+        opts.ser.print(" path=");
         switch (EVSYS->CHANNEL.bit.PATH) {
             case 0x0: opts.ser.print("SYNC"); break;
             case 0x1: opts.ser.print("RESYNC"); break;
             case 0x2: opts.ser.print("ASYNC"); break;
         }
-        opts.ser.print(" ");
+        opts.ser.print(" edgsel");
         switch (EVSYS->CHANNEL.bit.EDGSEL) {
             case 0x0: opts.ser.print("NONE"); break;
             case 0x1: opts.ser.print("RISE"); break;
             case 0x2: opts.ser.print("FALL"); break;
             case 0x3: opts.ser.print("BOTH"); break;
         }
-        opts.ser.print(" ");
+        opts.ser.print(" evgen=");
         switch (EVSYS->CHANNEL.bit.EVGEN) {
             case 0x00: opts.ser.print("NONE"); break;
             case 0x01: opts.ser.print("RTC:CMP0"); break;
@@ -260,7 +261,9 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
         // FUTURE: better way to wait until write has synchronized
         delay(1);
         if (EVSYS->USER.bit.CHANNEL || opts.showDisabled) {
-            opts.ser.print("USER ");
+            opts.ser.print("USER");
+            PRINTPAD2(uid);
+            opts.ser.print(" ");
             switch (uid) {
                 case 0x00: opts.ser.print("DMAC:0"); break;
                 case 0x01: opts.ser.print("DMAC:1"); break;
@@ -295,15 +298,14 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
                 case 0x1E: opts.ser.print("AC1:COMP1"); break;
                 /* 0x1F reserved */
             }
-        }
-        if (EVSYS->USER.bit.CHANNEL == 0) {
-            if (opts.showDisabled) {
-                opts.ser.println(":  --disabled--");
+            opts.ser.print(":  ");
+            if (EVSYS->USER.bit.CHANNEL == 0) {
+                opts.ser.println("--disabled--");
+            } else {
+                opts.ser.print("CHANNEL=");
+                PRINTPAD2(EVSYS->USER.bit.CHANNEL - 1);
+                opts.ser.println("");
             }
-        } else {
-            opts.ser.print(":  CHANNEL");
-            PRINTPAD2(EVSYS->USER.bit.CHANNEL - 1);
-            opts.ser.println("");
         }
     }
 
@@ -373,14 +375,12 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
             opts.ser.print("GCLK_");
             opts.ser.print(gclk_names[gclkid]);
             opts.ser.print(": ");
-        }
-        if (GCLK->CLKCTRL.bit.CLKEN) {
-            opts.ser.print(" GEN");
-            PRINTPAD2(GCLK->CLKCTRL.bit.GEN);
-            PRINTFLAG(GCLK->CLKCTRL, WRTLOCK);
-            opts.ser.println("");
-        } else {
-            if (opts.showDisabled) {
+            if (GCLK->CLKCTRL.bit.CLKEN) {
+                opts.ser.print(" GEN");
+                PRINTPAD2(GCLK->CLKCTRL.bit.GEN);
+                PRINTFLAG(GCLK->CLKCTRL, WRTLOCK);
+                opts.ser.println("");
+            } else {
                 opts.ser.println(" --disabled--");
             }
         }
@@ -458,14 +458,14 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     PRINTFLAG(NVMCTRL->CTRLB, CACHEDIS);
     opts.ser.print(" RWS=");
     opts.ser.print(NVMCTRL->CTRLB.bit.RWS);
-    opts.ser.print(" SLEEPPRM=");
+    opts.ser.print(" sleepprm=");
     switch (NVMCTRL->CTRLB.bit.SLEEPPRM) {
         case 0x0: opts.ser.print("WAKEONACCESS"); break;
         case 0x1: opts.ser.print("WAKEUPINSTANT"); break;
         case 0x2: break;
         case 0x3: opts.ser.print("DISABLED"); break;
     }
-    opts.ser.print(" READMODE=");
+    opts.ser.print(" readmode=");
     switch (NVMCTRL->CTRLB.bit.READMODE) {
         case 0x0: opts.ser.print("NO_MISS_PENALTY"); break;
         case 0x1: opts.ser.print("LOW_POWER"); break;
@@ -475,7 +475,7 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
 
     opts.ser.print("PARAM:  NVMP=");
     opts.ser.print(NVMCTRL->PARAM.bit.NVMP);
-    opts.ser.print(" PSZ=");
+    opts.ser.print(" psz=");
     opts.ser.print(1 << (3 + NVMCTRL->PARAM.bit.PSZ));
     opts.ser.println("");
 
@@ -499,7 +499,7 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
 
     // [9.3.1] User Row
     opts.ser.print("user row: ");
-    opts.ser.print(" BOOTPROT=");
+    opts.ser.print(" bootprot=");
     switch (READFUSE(NVMCTRL, BOOTPROT)) {
         case 0x7: opts.ser.print("0"); break;
         case 0x6: opts.ser.print("512"); break;
@@ -510,7 +510,7 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
         case 0x1: opts.ser.print("16k"); break;
         case 0x0: opts.ser.print("32k"); break;
     }
-    opts.ser.print(" EEPROM_SIZE=");
+    opts.ser.print(" eeprom_size=");
     switch (READFUSE(NVMCTRL, EEPROM_SIZE)) {
         case 0x7: opts.ser.print("0"); break;
         case 0x6: opts.ser.print("256"); break;
@@ -521,7 +521,7 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
         case 0x1: opts.ser.print("8k"); break;
         case 0x0: opts.ser.print("16k"); break;
     }
-    opts.ser.print(" REGION_LOCKS=");
+    opts.ser.print(" region_locks=");
     opts.ser.print(READFUSE(NVMCTRL, REGION_LOCKS), BIN);
     opts.ser.println("");
 
@@ -610,7 +610,7 @@ void printZeroRegPM(ZeroRegOptions &opts) {
 
     // CTRL
 
-    opts.ser.print("SLEEP:  IDLE=");
+    opts.ser.print("SLEEP:  idle=");
     switch(PM->SLEEP.bit.IDLE) {
         case 0x0: opts.ser.print("CPU"); break;
         case 0x1: opts.ser.print("CPU+AHB"); break;
@@ -618,19 +618,19 @@ void printZeroRegPM(ZeroRegOptions &opts) {
     }
     opts.ser.println("");
 
-    opts.ser.print("CPUSEL:  CPUDIV=");
+    opts.ser.print("CPUSEL:  /");
     PRINTSCALE(PM->CPUSEL.bit.CPUDIV);
     opts.ser.println("");
 
-    opts.ser.print("APBASEL:  APBADIV=");
+    opts.ser.print("APBASEL:  /");
     PRINTSCALE(PM->APBASEL.bit.APBADIV);
     opts.ser.println("");
 
-    opts.ser.print("APBBSEL:  APBBDIV=");
+    opts.ser.print("APBBSEL:  /");
     PRINTSCALE(PM->APBBSEL.bit.APBBDIV);
     opts.ser.println("");
 
-    opts.ser.print("APBCSEL:  APBCDIV=");
+    opts.ser.print("APBCSEL:  /");
     PRINTSCALE(PM->APBCSEL.bit.APBCDIV);
     opts.ser.println("");
 
@@ -786,7 +786,7 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
         }
         if (pmuxen) {
             uint8_t pmux = 0xF & PORT->Group[pin.grp].PMUX[pin.idx / 2].reg >> (4 * (pin.idx % 2));
-            opts.ser.print(" PMUX=");
+            opts.ser.print(" pmux=");
             if (pin.pmux[pmux]) {
                 opts.ser.print(pin.pmux[pmux]);
             } else {
@@ -794,7 +794,7 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
                 PRINTHEX(pmux);
             }
         } else {
-            opts.ser.print(" DIR=");
+            opts.ser.print(" dir=");
             opts.ser.print(dir ? "OUT" : "IN");
             PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], INEN);
             if (!dir && pullen) {
@@ -817,7 +817,7 @@ void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
         }
         return;
     }
-    opts.ser.print("CTRL:  PRESCALER=");
+    opts.ser.print("CTRL:  prescaler=");
     PRINTSCALE(mode.CTRL.bit.PRESCALER);
     PRINTFLAG(mode.CTRL, MATCHCLR);
     opts.ser.println("");
@@ -864,7 +864,7 @@ void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
         }
         return;
     }
-    opts.ser.print("CTRL:  PRESCALER=");
+    opts.ser.print("CTRL:  prescaler=");
     PRINTSCALE(mode.CTRL.bit.PRESCALER);
     opts.ser.println("");
 
@@ -919,7 +919,7 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
         }
         return;
     }
-    opts.ser.print("CTRL:  PRESCALER=");
+    opts.ser.print("CTRL:  prescaler=");
     PRINTSCALE(mode.CTRL.bit.PRESCALER);
     PRINTFLAG(mode.CTRL, CLKREP);
     PRINTFLAG(mode.CTRL, MATCHCLR);
@@ -1017,7 +1017,7 @@ void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
     opts.ser.print("CTRLA: ");
     PRINTFLAG(i2cm.CTRLA, RUNSTDBY);
     PRINTFLAG(i2cm.CTRLA, PINOUT);
-    opts.ser.print(" SDAHOLD=");
+    opts.ser.print(" sdahold=");
     switch (i2cm.CTRLA.bit.SDAHOLD) {
         case 0x0: opts.ser.print("DIS"); break;
         case 0x1: opts.ser.print("75NS"); break;
@@ -1026,14 +1026,14 @@ void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
     }
     PRINTFLAG(i2cm.CTRLA, MEXTTOEN);
     PRINTFLAG(i2cm.CTRLA, SEXTTOEN);
-    opts.ser.print(" SPEED=");
+    opts.ser.print(" speed=");
     switch (i2cm.CTRLA.bit.SPEED) {
         case 0x0: opts.ser.print("SM<100kHz,FM<400kHz"); break;
         case 0x1: opts.ser.print("FM+<1MHz"); break;
         case 0x2: opts.ser.print("HS<3.4MHz"); break;
     }
     PRINTFLAG(i2cm.CTRLA, SCLSM);
-    opts.ser.print(" INACTOUT=");
+    opts.ser.print(" inactout=");
     switch (i2cm.CTRLA.bit.INACTOUT) {
         case 0x0: opts.ser.print("DIS"); break;
         case 0x1: opts.ser.print("55NS"); break;
@@ -1047,7 +1047,7 @@ void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
     PRINTFLAG(i2cm.CTRLB, QCEN);
     if (i2cm.CTRLB.bit.SMEN) {
         opts.ser.print(" SMEN");
-        opts.ser.print(" ACKACT=");
+        opts.ser.print(" ackact=");
         opts.ser.print(i2cm.CTRLB.bit.ACKACT ? "ACK" : "NACK");
     }
     opts.ser.println("");
@@ -1068,7 +1068,7 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     opts.ser.print("CTRLA: ");
     PRINTFLAG(i2cs.CTRLA, RUNSTDBY);
     PRINTFLAG(i2cs.CTRLA, PINOUT);
-    opts.ser.print(" SDAHOLD=");
+    opts.ser.print(" sdahold=");
     switch (i2cs.CTRLA.bit.SDAHOLD) {
         case 0x0: opts.ser.print("DIS"); break;
         case 0x1: opts.ser.print("75NS"); break;
@@ -1076,7 +1076,7 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
         case 0x3: opts.ser.print("600NS"); break;
     }
     PRINTFLAG(i2cs.CTRLA, SEXTTOEN);
-    opts.ser.print(" SPEED=");
+    opts.ser.print(" speed=");
     switch (i2cs.CTRLA.bit.SPEED) {
         case 0x0: opts.ser.print("SM<100kHz,FM<400kHz"); break;
         case 0x1: opts.ser.print("FM+<1MHz"); break;
@@ -1089,12 +1089,12 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     opts.ser.print("CTRLB: ");
     if (i2cs.CTRLB.bit.SMEN) {
         opts.ser.print(" SMEN");
-        opts.ser.print(" ACKACT=");
+        opts.ser.print(" ackact=");
         opts.ser.print(i2cs.CTRLB.bit.ACKACT ? "ACK" : "NACK");
     }
     PRINTFLAG(i2cs.CTRLB, GCMD);
     PRINTFLAG(i2cs.CTRLB, AACKEN);
-    opts.ser.print(" AMODE=");
+    opts.ser.print(" amode=");
     switch (i2cs.CTRLB.bit.AMODE) {
         case 0x0: opts.ser.print("MASK"); break;
         case 0x1: opts.ser.print("2ADDRS"); break;
@@ -1122,46 +1122,46 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
     opts.ser.print("CTRLA: ");
     PRINTFLAG(spi.CTRLA, RUNSTDBY);
     PRINTFLAG(spi.CTRLA, IBON);
-    opts.ser.print(master ? " MISO=" : " MOSI=");
+    opts.ser.print(master ? " miso=" : " mosi=");
     switch (spi.CTRLA.bit.DIPO) {
         case 0x0: opts.ser.print("PAD0"); break;
         case 0x1: opts.ser.print("PAD1"); break;
         case 0x2: opts.ser.print("PAD2"); break;
         case 0x3: opts.ser.print("PAD3"); break;
     }
-    opts.ser.print(master ? " MOSI=" : " MISO=");
+    opts.ser.print(master ? " mosi=" : " miso=");
     switch (spi.CTRLA.bit.DOPO) {
         case 0x0:
-            opts.ser.print("PAD0 SCK=PAD1");
-            if (!master) opts.ser.print(" SS=PAD2");
+            opts.ser.print("PAD0 sck=PAD1");
+            if (!master) opts.ser.print(" ss=PAD2");
             break;
         case 0x1:
-            opts.ser.print("PAD2 SCK=PAD3");
-            if (!master) opts.ser.print(" SS=PAD1");
+            opts.ser.print("PAD2 sck=PAD3");
+            if (!master) opts.ser.print(" ss=PAD1");
             break;
         case 0x2:
-            opts.ser.print("PAD3 SCK=PAD1");
-            if (!master) opts.ser.print(" SS=PAD2");
+            opts.ser.print("PAD3 sck=PAD1");
+            if (!master) opts.ser.print(" ss=PAD2");
             break;
         case 0x3:
-            opts.ser.print("PAD0 SCK=PAD3");
-            if (!master) opts.ser.print(" SS=PAD1");
+            opts.ser.print("PAD0 sck=PAD3");
+            if (!master) opts.ser.print(" ss=PAD1");
             break;
     }
-    opts.ser.print(" FORM=");
+    opts.ser.print(" form=");
     switch (spi.CTRLA.bit.FORM) {
         case 0x0: opts.ser.print("SPI"); break;
         case 0x1: /* reserved */ break;
         case 0x2: opts.ser.print("SPI_ADDR"); break;
         /* 0x3-0xF reserved */
     }
-    opts.ser.print(" CPHA="); opts.ser.print(spi.CTRLA.bit.CPHA ? "TRAILING" : "LEADING");
-    opts.ser.print(" CPOL="); opts.ser.print(spi.CTRLA.bit.CPOL ? "HIGH" : "LOW");
-    opts.ser.print(" DORD="); opts.ser.print(spi.CTRLA.bit.DORD ? "LSB" : "MSB");
+    opts.ser.print(" cpha="); opts.ser.print(spi.CTRLA.bit.CPHA ? "TRAILING" : "LEADING");
+    opts.ser.print(" cpol="); opts.ser.print(spi.CTRLA.bit.CPOL ? "HIGH" : "LOW");
+    opts.ser.print(" dord="); opts.ser.print(spi.CTRLA.bit.DORD ? "LSB" : "MSB");
     opts.ser.println("");
 
     opts.ser.print("CTRLB: ");
-    opts.ser.print(" CHSIZE=");
+    opts.ser.print(" chsize=");
     switch (spi.CTRLB.bit.CHSIZE) {
         case 0x0: opts.ser.print("8bit"); break;
         case 0x1: opts.ser.print("9bit"); break;
@@ -1170,7 +1170,7 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
     PRINTFLAG(spi.CTRLB, PLOADEN);
     PRINTFLAG(spi.CTRLB, SSDE);
     PRINTFLAG(spi.CTRLB, MSSEN);
-    opts.ser.print(" AMODE=");
+    opts.ser.print(" amode=");
     switch (spi.CTRLB.bit.AMODE) {
         case 0x0: opts.ser.print("MASK"); break;
         case 0x1: opts.ser.print("2ADDRS"); break;
@@ -1204,14 +1204,14 @@ void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
     opts.ser.print("CTRLA: ");
     PRINTFLAG(usart.CTRLA, RUNSTDBY);
     PRINTFLAG(usart.CTRLA, IBON);
-    opts.ser.print(" CMODE="); opts.ser.print(usart.CTRLA.bit.CMODE ? "SYNC" : "ASYNC");
-    opts.ser.print(" CPOL="); opts.ser.print(usart.CTRLA.bit.CPOL ? "FALLING" : "RISING");
-    opts.ser.print(" DORD="); opts.ser.print(usart.CTRLA.bit.CPOL ? "LSB" : "MSB");
+    opts.ser.print(" cmode="); opts.ser.print(usart.CTRLA.bit.CMODE ? "SYNC" : "ASYNC");
+    opts.ser.print(" cpol="); opts.ser.print(usart.CTRLA.bit.CPOL ? "FALLING" : "RISING");
+    opts.ser.print(" dord="); opts.ser.print(usart.CTRLA.bit.CPOL ? "LSB" : "MSB");
     opts.ser.print(" SAMPR=");
     PRINTHEX(usart.CTRLA.bit.SAMPR);  // FUTURE
     opts.ser.print(" SAMPA=");
     PRINTHEX(usart.CTRLA.bit.SAMPA);  // FUTURE
-    opts.ser.print(" FORM=");
+    opts.ser.print(" form=");
     switch(usart.CTRLA.bit.FORM) {
         case 0x0: opts.ser.print("USART"); break;
         case 0x1: opts.ser.print("USART,PARITY"); break;
@@ -1229,22 +1229,22 @@ void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
     }
     switch (usart.CTRLA.bit.TXPO) {
         case 0x0:
-            opts.ser.print(" TX=PAD0");
-            if (usart.CTRLA.bit.MODE == 0) opts.ser.print(" XCK=PAD1");
+            opts.ser.print(" tx=PAD0");
+            if (usart.CTRLA.bit.MODE == 0) opts.ser.print(" xck=PAD1");
             break;
         case 0x1:
-            opts.ser.print(" TX=PAD2");
-            if (usart.CTRLA.bit.MODE == 0) opts.ser.print(" XCK=PAD3");
+            opts.ser.print(" tx=PAD2");
+            if (usart.CTRLA.bit.MODE == 0) opts.ser.print(" xck=PAD3");
             break;
         case 0x2:
-            opts.ser.print(" TX=PAD0");
-            opts.ser.print(" RTS=PAD2");
-            opts.ser.print(" CTS=PAD3");
+            opts.ser.print(" tx=PAD0");
+            opts.ser.print(" rts=PAD2");
+            opts.ser.print(" cts=PAD3");
             break;
     }
     opts.ser.println("");
 
-    opts.ser.print("CTRLB:  CHSIZE=");
+    opts.ser.print("CTRLB:  chsize=");
     switch (usart.CTRLB.bit.CHSIZE) {
         case 0x0: opts.ser.print("8bit"); break;
         case 0x1: opts.ser.print("9bit"); break;
@@ -1335,7 +1335,7 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTFLAG(SYSCTRL->XOSC, RUNSTDBY);
         PRINTFLAG(SYSCTRL->XOSC, ONDEMAND);
         PRINTFLAG(SYSCTRL->XOSC, AMPGC);
-        opts.ser.print(" GAIN=");
+        opts.ser.print(" gain=");
         switch (SYSCTRL->XOSC.bit.GAIN) {
             case 0x0: opts.ser.print("2MHz"); break;
             case 0x1: opts.ser.print("4MHz"); break;
@@ -1343,7 +1343,7 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
             case 0x3: opts.ser.print("16MHz"); break;
             case 0x4: opts.ser.print("30MHz"); break;
         }
-        opts.ser.print(" STARTUP=");
+        opts.ser.print(" startup=");
         switch (SYSCTRL->XOSC.bit.STARTUP) {
             case 0x0: opts.ser.print("31us"); break;
             case 0x1: opts.ser.print("61us"); break;
@@ -1378,7 +1378,7 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTFLAG(SYSCTRL->XOSC32K, RUNSTDBY);
         PRINTFLAG(SYSCTRL->XOSC32K, ONDEMAND);
         PRINTFLAG(SYSCTRL->XOSC32K, WRTLOCK);
-        opts.ser.print(" STARTUP=");
+        opts.ser.print(" startup=");
         switch (SYSCTRL->XOSC32K.bit.STARTUP) {
             case 0x0: opts.ser.print("122us"); break;
             case 0x1: opts.ser.print("1068us"); break;
@@ -1403,7 +1403,7 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTFLAG(SYSCTRL->OSC32K, RUNSTDBY);
         PRINTFLAG(SYSCTRL->OSC32K, ONDEMAND);
         PRINTFLAG(SYSCTRL->OSC32K, WRTLOCK);
-        opts.ser.print(" STARTUP=");
+        opts.ser.print(" startup=");
         switch (SYSCTRL->OSC32K.bit.STARTUP) {
             case 0x0: opts.ser.print("92us"); break;
             case 0x1: opts.ser.print("122us"); break;
@@ -1433,11 +1433,11 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         opts.ser.print("OSC8M: ");
         PRINTFLAG(SYSCTRL->OSC8M, RUNSTDBY);
         PRINTFLAG(SYSCTRL->OSC8M, ONDEMAND);
-        opts.ser.print(" PRESC=");
+        opts.ser.print(" presc=");
         PRINTSCALE(SYSCTRL->OSC8M.bit.PRESC);
         opts.ser.print(" CALIB=");
         PRINTHEX(SYSCTRL->OSC8M.bit.CALIB);
-        opts.ser.print(" FRANGE=");
+        opts.ser.print(" frange=");
         switch (SYSCTRL->OSC8M.bit.FRANGE) {
             case 0x0: opts.ser.print("4-6MHz"); break;
             case 0x1: opts.ser.print("6-8MHz"); break;
@@ -1479,13 +1479,13 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTFLAG(SYSCTRL->BOD33, RUNSTDBY);
         PRINTFLAG(SYSCTRL->BOD33, MODE);
         PRINTFLAG(SYSCTRL->BOD33, CEN);
-        opts.ser.print(" ACTION=");
+        opts.ser.print(" action=");
         switch (SYSCTRL->BOD33.bit.ACTION) {
             case 0x0: opts.ser.print("NONE"); break;
             case 0x1: opts.ser.print("RESET"); break;
             case 0x2: opts.ser.print("INT"); break;
         }
-        opts.ser.print(" PSEL=");
+        opts.ser.print(" psel=");
         PRINTSCALE(SYSCTRL->BOD33.bit.PSEL);
         opts.ser.print(" LEVEL=");
         PRINTHEX(SYSCTRL->BOD33.bit.LEVEL);
@@ -1554,13 +1554,13 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
     PRINTFLAG(WDT->CTRL, ALWAYSON);
     opts.ser.println("");
 
-    opts.ser.print("CONFIG:  PER=");
+    opts.ser.print("CONFIG:  per=");
     PRINTSCALE(3 + WDT->CONFIG.bit.PER);
-    opts.ser.print(" WINDOW=");
+    opts.ser.print(" window=");
     PRINTSCALE(3 + WDT->CONFIG.bit.WINDOW);
     opts.ser.println("");
 
-    opts.ser.print("EWCTRL:  EWOFFSET=");
+    opts.ser.print("EWCTRL:  ewoffset=");
     PRINTSCALE(3 + WDT->EWCTRL.bit.EWOFFSET);
     opts.ser.println("");
 
@@ -1573,11 +1573,11 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
     opts.ser.print(READFUSE(WDT, ENABLE));
     opts.ser.print(" ALWAYSON=");
     opts.ser.print(READFUSE(WDT, ALWAYSON));
-    opts.ser.print(" PER=");
+    opts.ser.print(" per=");
     PRINTSCALE(3 + READFUSE(WDT, PER));
-    opts.ser.print(" WINDOW=");
+    opts.ser.print(" window=");
     PRINTSCALE(3 + READ2FUSES(WDT, WINDOW, 1));
-    opts.ser.print(" EWOFFSET=");
+    opts.ser.print(" ewoffset=");
     PRINTSCALE(3 + READFUSE(WDT, EWOFFSET));
     opts.ser.print(" WEN=");
     opts.ser.print(READFUSE(WDT, WEN));

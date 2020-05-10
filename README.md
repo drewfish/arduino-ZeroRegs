@@ -8,6 +8,7 @@ but not the _status_ registers.
 
 [![Build Status](https://travis-ci.org/drewfish/arduino-ZeroRegs.svg?branch=master)](https://travis-ci.org/drewfish/arduino-ZeroRegs)
 
+
 Examples
 --------
 This will show the registers when the device boots:
@@ -20,7 +21,6 @@ void setup() {
     printZeroRegs(opts);
 }
 ```
-
 
 This will show the registers every time USB is connected:
 ```cpp
@@ -42,6 +42,26 @@ void loop() {
 }
 ```
 
+
+Output Conventions
+------------------
+The following conventions are followed as best as possible:
+
+Each peripheral prints its own section, with a header.
+Example: `--------------------------- PERIPHERAL`
+
+Each register is printed on it's own line.
+Example: `REGISTRY:  ...fields...`.
+
+Register fields which are boolean flags are either shown (if set) or not shown (if not set).
+
+Register fields which aren't boolean flags are shown as `NAME=VALUE`.
+If the value is printed directly (either decimal or hexadecimal) then the field name will be uppercase.
+Hexadecimal values are always prefixed with `0x`.
+If the value is interpretted in any way (such as referenced from a table) then the field name will be lowercase.
+
+Any editorial comments made by this library will be in lower case surrounded by parentheses.
+Example: `(slow)`.
 
 
 Function Reference
@@ -131,11 +151,11 @@ Prints out the configuration registers for the `NVMCTRL` peripheral.
 example output:
 ```text
 --------------------------- NVMCTRL
-CTRLB:  RWS=1 SLEEPPRM=WAKEONACCESS READMODE=NO_MISS_PENALTY
-PARAM:  NVMP=4096 PSZ=64 RWWEEPROM=0
+CTRLB:  RWS=1 sleepprm=WAKEONACCESS readmode=NO_MISS_PENALTY
+PARAM:  NVMP=4096 psz=64 RWWEEPROM=0
 STATUS:
 LOCK:  1111111111111111
-user row:  BOOTPROT=0 EEPROM_SIZE=0 REGION_LOCKS=1111111111111111
+user row:  bootprot=0 eeprom_size=0 region_locks=1111111111111111
 serial # 0x594A1C9A 0x514D3246 0x43202020 0xFF0A1919
 ```
 
@@ -150,12 +170,12 @@ Prints out the configuration registers for the `PM` peripheral.
 example output:
 ```text
 --------------------------- PM
-SLEEP:  IDLE=CPU
+SLEEP:  idle=CPU
 EXTCTRL:
-CPUSEL:  CPUDIV=1
-APBASEL:  APBADIV=1
-APBBSEL:  APBBDIV=1
-APBCSEL:  APBCDIV=1
+CPUSEL:  /1
+APBASEL:  /1
+APBBSEL:  /1
+APBCSEL:  /1
 AHBMASK:  CLK_HPBA_AHB CLK_HPBB_AHB CLK_HPBC_AHB CLK_DSU_AHB CLK_NVMCTRL_AHB CLK_DMAC_AHB CLK_USB_AHB
 APBAMASK:  CLK_PAC0_APB CLK_PM_APB CLK_SYSCTRL_APB CLK_GCLK_APB CLK_WDT_APB CLK_RTC_APB CLK_EIC_APB
 APBBMASK:  CLK_PAC1_APB CLK_DSU_APB CLK_NVMCTRL_APB CLK_PORT_APB CLK_DMAC_APB CLK_USB_APB
@@ -170,34 +190,34 @@ Prints out the configuration registers for the `PORT` peripheral.
 example output:
 ```text
 --------------------------- PORT
-PA11 D0/RX:  PMUX=SERCOM0:3
-PA10 D1/TX:  PMUX=SERCOM0:2
-PA14 D2:  DIR=IN INEN
-PA09 D3:  DIR=IN INEN
-PA08 D4:  DIR=IN INEN
-PA15 D5:  DIR=IN INEN
-PA20 D6:  DIR=IN INEN
-PA21 D7:  DIR=IN INEN
-PA06 D8:  DIR=IN INEN
-PA07 D9:  PMUX=EIC:7
-PA18 D10:  DIR=IN INEN
-PA16 D11:  PMUX=SERCOM1:0
-PA19 D12:  PMUX=SERCOM1:3
-PA17 D13:  PMUX=SERCOM1:1
-PA02 A0:  PMUX=AIN0/Y0/VOUT
-PA22 SDA:  PMUX=SERCOM3:0
-PA23 SCL:  PMUX=SERCOM3:1
-PA24 USB_DM:  PMUX=USB:DM
-PA25 USB_DP:  PMUX=USB:DP
-PA22 EDBG_SDA:  PMUX=SERCOM3:0
-PA23 EDBG_SCL:  PMUX=SERCOM3:1
-PA19 EDBG_MISO:  PMUX=SERCOM1:3
-PA16 EDBG_MOSI:  PMUX=SERCOM1:0
-PA18 EDBG_SS:  DIR=IN INEN
-PA17 EDBG_SCK:  PMUX=SERCOM1:1
-PA21 EDBG_GPIO1:  DIR=IN INEN
-PA06 EDBG_GPIO2:  DIR=IN INEN
-PA07 EDBG_GPIO3:  PMUX=EIC:7
+PA11 D0/RX:  pmux=SERCOM0:3
+PA10 D1/TX:  pmux=SERCOM0:2
+PA14 D2:  dir=IN INEN
+PA09 D3:  dir=IN INEN
+PA08 D4:  dir=IN INEN
+PA15 D5:  dir=IN INEN
+PA20 D6:  dir=IN INEN
+PA21 D7:  dir=IN INEN
+PA06 D8:  dir=IN INEN
+PA07 D9:  pmux=EIC:7
+PA18 D10:  dir=IN INEN
+PA16 D11:  pmux=SERCOM1:0
+PA19 D12:  pmux=SERCOM1:3
+PA17 D13:  pmux=SERCOM1:1
+PA02 A0:  pmux=AIN0/Y0/VOUT
+PA22 SDA:  pmux=SERCOM3:0
+PA23 SCL:  pmux=SERCOM3:1
+PA24 USB_DM:  pmux=USB:DM
+PA25 USB_DP:  pmux=USB:DP
+PA22 EDBG_SDA:  pmux=SERCOM3:0
+PA23 EDBG_SCL:  pmux=SERCOM3:1
+PA19 EDBG_MISO:  pmux=SERCOM1:3
+PA16 EDBG_MOSI:  pmux=SERCOM1:0
+PA18 EDBG_SS:  dir=IN INEN
+PA17 EDBG_SCK:  pmux=SERCOM1:1
+PA21 EDBG_GPIO1:  dir=IN INEN
+PA06 EDBG_GPIO2:  dir=IN INEN
+PA07 EDBG_GPIO3:  pmux=EIC:7
 ```
 
 
@@ -207,7 +227,7 @@ Prints out the configuration registers for the `RTC` peripheral.
 example output:
 ```text
 --------------------------- RTC MODE2
-CTRL:  PRESCALER=1024
+CTRL:  prescaler=1024
 READREQ:
 EVCTRL:
 FREQCORR:  0x0
@@ -226,8 +246,8 @@ Prints out the configuration registers for a `SERCOM` peripheral.
 example output:
 ```text
 --------------------------- SERCOM1 SPI master
-CTRLA:  MISO=PAD3 MOSI=PAD0 SCK=PAD1 FORM=SPI CPHA=LEADING CPOL=LOW DORD=MSB
-CTRLB:  CHSIZE=8bit AMODE=MASK RXEN
+CTRLA:  miso=PAD3 mosi=PAD0 sck=PAD1 form=SPI cpha=LEADING cpol=LOW dord=MSB
+CTRLB:  chsize=8bit amode=MASK RXEN
 BAUD:  0x5
 ```
 
@@ -239,11 +259,11 @@ example output:
 ```text
 --------------------------- SYSCTRL
 PCLKSR:  XOSC32KRDY OSC8MRDY DFLLRDY DFLLLCKF DFLLLCKC BOD33RDY B33SRDY
-XOSC32K:  XTALEN EN32K RUNSTDBY ONDEMAND STARTUP=2000092us
+XOSC32K:  XTALEN EN32K RUNSTDBY ONDEMAND startup=2000092us
 OSCULP32K:  CALIB=0x11
-OSC8M:  PRESC=1 CALIB=0x80D FRANGE=8-11MHz
+OSC8M:  presc=1 CALIB=0x80D frange=8-11MHz
 DFLL:  MODE QLDIS WAITLOCK
-BOD33:  ACTION=RESET PSEL=1 LEVEL=0x7
+BOD33:  action=RESET psel=1 LEVEL=0x7
 VREG:
 VREF:  CALIB=0x60
 ```

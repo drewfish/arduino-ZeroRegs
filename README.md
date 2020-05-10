@@ -141,10 +141,6 @@ GEN03:  OSC8M
 Prints out the configuration registers for the `I2S` peripheral.
 
 
-### void printZeroRegMTB(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
-Prints out the configuration registers for the `MTB` peripheral.
-
-
 ### void printZeroRegNVMCTRL(ZeroRegOptions &opts)
 Prints out the configuration registers for the `NVMCTRL` peripheral.
 

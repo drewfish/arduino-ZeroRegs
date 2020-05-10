@@ -443,11 +443,6 @@ void printZeroRegI2S(ZeroRegOptions &opts) {
 }
 
 
-void printZeroRegMTB(ZeroRegOptions &opts) {
-    // FUTURE
-}
-
-
 void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- NVMCTRL");
 
@@ -1595,7 +1590,6 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegEVSYS(opts);
     printZeroRegGCLK(opts);
     printZeroRegI2S(opts);
-    printZeroRegMTB(opts);
     printZeroRegNVMCTRL(opts);
     printZeroRegPAC(opts);
     printZeroRegPM(opts);

@@ -8,7 +8,6 @@ printZeroRegEIC	KEYWORD1
 printZeroRegEVSYS	KEYWORD1
 printZeroRegGCLK	KEYWORD1
 printZeroRegI2S	KEYWORD1
-printZeroRegMTB	KEYWORD1
 printZeroRegNVMCTRL	KEYWORD1
 printZeroRegPACs	KEYWORD1
 printZeroRegPM	KEYWORD1

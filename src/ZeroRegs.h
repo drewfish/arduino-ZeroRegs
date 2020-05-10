@@ -48,7 +48,6 @@ void printZeroRegEIC(ZeroRegOptions &opts);
 void printZeroRegEVSYS(ZeroRegOptions &opts);
 void printZeroRegGCLK(ZeroRegOptions &opts);
 void printZeroRegI2S(ZeroRegOptions &opts);
-void printZeroRegMTB(ZeroRegOptions &opts);
 void printZeroRegNVMCTRL(ZeroRegOptions &opts);
 void printZeroRegPAC(ZeroRegOptions &opts);
 void printZeroRegPM(ZeroRegOptions &opts);

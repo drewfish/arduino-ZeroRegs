@@ -431,7 +431,11 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
 
 
 void printZeroRegI2S(ZeroRegOptions &opts) {
-    // FUTURE
+#ifdef I2S
+    //FUTURE -- print I2S
+#else
+    //FUTURE -- print message about missing I2S
+#endif
 }
 
 
@@ -1403,7 +1407,11 @@ void printZeroRegTCC(ZeroRegOptions &opts, Tcc* tcc, uint8_t idx) {
 
 
 void printZeroRegUSB(ZeroRegOptions &opts) {
-    // FUTURE
+#ifdef USB
+    //FUTURE -- print USB
+#else
+    //FUTURE -- print message about missing USB
+#endif
 }
 
 
@@ -1467,7 +1475,9 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegADC(opts);
     printZeroRegDAC(opts);
     printZeroRegEIC(opts);
+#ifdef I2S
     printZeroRegI2S(opts);
+#endif
     printZeroRegNVMCTRL(opts);
     printZeroRegPORT(opts);
     printZeroRegRTC(opts);
@@ -1487,7 +1497,15 @@ void printZeroRegs(ZeroRegOptions &opts) {
     printZeroRegTC(opts, TC3, 3);
     printZeroRegTC(opts, TC4, 4);
     printZeroRegTC(opts, TC5, 5);
+#ifdef TC6
+    printZeroRegTC(opts, TC6, 6);
+#endif
+#ifdef TC7
+    printZeroRegTC(opts, TC7, 7);
+#endif
+#ifdef USB
     printZeroRegUSB(opts);
+#endif
 }
 
 

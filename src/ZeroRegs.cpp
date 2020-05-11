@@ -382,7 +382,7 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- GCLK");
 
     for (uint8_t genid = 0; genid < 0x9; genid++) {
-        // see [15.6.4.1 DSrevF] Indirect Access
+        // [15.6.4.1 DSrevF] Indirect Access
         WRITE8(GCLK->GENCTRL.reg, genid);
         //FUTURE -- better way to wait until write has synchronized
         delay(1);
@@ -408,7 +408,7 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
             case 0x8: opts.out.print("FDPLL96M"); break;
             default: opts.out.print(ZeroRegs__RESERVED); break;
         }
-        // see [15.6.4.1 DSrevF] Indirect Access
+        // [15.6.4.1 DSrevF] Indirect Access
         WRITE8(GCLK->GENDIV.reg, genid);
         //FUTURE -- better way to wait until write has synchronized
         delay(1);
@@ -431,7 +431,7 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
 
     opts.out.println("GCLK_MAIN:  GEN00 (always)");
     for (uint8_t gclkid = 0; gclkid < 37; gclkid++) {
-        // see [15.6.4.1 DSrevF] Indirect Access
+        // [15.6.4.1 DSrevF] Indirect Access
         WRITE8(GCLK->CLKCTRL.reg, gclkid);
         //FUTURE -- better way to wait until write has synchronized
         delay(1);
@@ -459,6 +459,19 @@ void printZeroRegI2S(ZeroRegOptions &opts) {
 }
 
 
+typedef union {
+    struct {
+        uint64_t    :26;
+        uint64_t    ADC_LINEARITY:8;
+        uint64_t    ADC_BIAS:3;
+        uint64_t    OSC32K_CAL:7;
+        uint64_t    USB_TRANSN:5;
+        uint64_t    USB_TRANSP:5;
+        uint64_t    USB_TRIM:3;
+        uint64_t    DFLL48M_COARSE_CAL:6;
+    } bit;
+    uint64_t reg;
+} ZeroRegsNVM_OTP4_Type;
 void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- NVMCTRL");
 
@@ -470,7 +483,7 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     switch (NVMCTRL->CTRLB.bit.SLEEPPRM) {
         case 0x0: opts.out.print("WAKEONACCESS"); break;
         case 0x1: opts.out.print("WAKEUPINSTANT"); break;
-        case 0x2: break;
+        case 0x2: opts.out.print(ZeroRegs__RESERVED); break;
         case 0x3: opts.out.print("DISABLED"); break;
     }
     opts.out.print(" readmode=");
@@ -478,6 +491,7 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
         case 0x0: opts.out.print("NO_MISS_PENALTY"); break;
         case 0x1: opts.out.print("LOW_POWER"); break;
         case 0x2: opts.out.print("DETERMINISTIC"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTFLAG(NVMCTRL->CTRLB, CACHEDIS);
     PRINTNL();
@@ -486,12 +500,14 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     opts.out.print(NVMCTRL->PARAM.bit.NVMP);
     opts.out.print(" psz=");
     opts.out.print(1 << (3 + NVMCTRL->PARAM.bit.PSZ));
+    opts.out.print("bytes");
     PRINTNL();
 
     opts.out.print("LOCK:  ");
     opts.out.println(NVMCTRL->LOCK.reg, BIN);
 
-    // [9.3.1] User Row
+    // [10.3.1 DSrevF] NVM User Row Mapping
+    // [22.6.5 DSrevF] NVM User Configuration
     opts.out.print("user row: ");
     opts.out.print(" bootprot=");
     switch (READFUSE(NVMCTRL, BOOTPROT)) {
@@ -519,10 +535,28 @@ void printZeroRegNVMCTRL(ZeroRegOptions &opts) {
     opts.out.print(READFUSE(NVMCTRL, REGION_LOCKS), BIN);
     PRINTNL();
 
-    // [9.3.2] Software Calibration Area
-    // FUTURE
+    // [10.3.2 DSrevF] NVM Software Calibration Area Mapping
+    //  0x806020 NVMCTRL_OTP4
+    ZeroRegsNVM_OTP4_Type otp4;
+    otp4.reg = ((ZeroRegsNVM_OTP4_Type*)NVMCTRL_OTP4)->reg;
+    opts.out.print("software calibration: ");
+    opts.out.print(" ADC_LINEARITY=");
+    PRINTHEX((uint8_t)otp4.bit.ADC_LINEARITY);
+    opts.out.print(" ADC_BIAS=");
+    PRINTHEX((uint8_t)otp4.bit.ADC_BIAS);
+    opts.out.print(" OSC32K_CAL=");
+    PRINTHEX((uint8_t)otp4.bit.OSC32K_CAL);
+    opts.out.print(" USB_TRANSN=");
+    PRINTHEX((uint8_t)otp4.bit.USB_TRANSN);
+    opts.out.print(" USB_TRANSP=");
+    PRINTHEX((uint8_t)otp4.bit.USB_TRANSP);
+    opts.out.print(" USB_TRIM=");
+    PRINTHEX((uint8_t)otp4.bit.USB_TRIM);
+    opts.out.print(" DFLL48M_COARSE_CAL=");
+    PRINTHEX((uint8_t)otp4.bit.DFLL48M_COARSE_CAL);
+    PRINTNL();
 
-    // [9.3.3] Serial Number
+    // [10.3.3 DSrevF] Serial Number
     // 0x0080A00C 0x0080A040 0x0080A044 0x0080A048
     opts.out.print("serial # ");
     PRINTHEX(READADDR32(0x0080A00C));

@@ -621,16 +621,9 @@ void printZeroRegPAC(ZeroRegOptions &opts) {
         if (bitRead(PAC2->WPSET.reg, 19)) opts.out.print(" PTC");
         if (bitRead(PAC2->WPSET.reg, 20)) opts.out.print(" I2S");
         if (bitRead(PAC2->WPSET.reg, 21)) opts.out.print(" AC1");
-        if (bitRead(PAC2->WPSET.reg, 22)) opts.out.print(" 22?");
-        if (bitRead(PAC2->WPSET.reg, 23)) opts.out.print(" 23?");
-        if (bitRead(PAC2->WPSET.reg, 24)) opts.out.print(" 24?");
-        if (bitRead(PAC2->WPSET.reg, 25)) opts.out.print(" 25?");
-        if (bitRead(PAC2->WPSET.reg, 26)) opts.out.print(" 26?");
-        if (bitRead(PAC2->WPSET.reg, 27)) opts.out.print(" 27?");
-        if (bitRead(PAC2->WPSET.reg, 28)) opts.out.print(" 28?");
-        if (bitRead(PAC2->WPSET.reg, 29)) opts.out.print(" 29?");
-        if (bitRead(PAC2->WPSET.reg, 30)) opts.out.print(" 30?");
-        if (bitRead(PAC2->WPSET.reg, 31)) opts.out.print(" 31?");
+        // undefined                 22
+        // undefined                 23
+        if (bitRead(PAC2->WPSET.reg, 24)) opts.out.print(" TCC3");
         PRINTNL();
     }
 }

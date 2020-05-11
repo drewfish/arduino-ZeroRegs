@@ -637,6 +637,7 @@ void printZeroRegPM(ZeroRegOptions &opts) {
         case 0x0: opts.out.print("CPU"); break;
         case 0x1: opts.out.print("CPU+AHB"); break;
         case 0x2: opts.out.print("CPU+AHB+APB"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTNL();
 
@@ -707,6 +708,10 @@ void printZeroRegPM(ZeroRegOptions &opts) {
     if (PM->APBCMASK.bit.DAC_)      { opts.out.print(" CLK_DAC_APB"); }
     if (PM->APBCMASK.bit.PTC_)      { opts.out.print(" CLK_PTC_APB"); }
     if (PM->APBCMASK.bit.I2S_)      { opts.out.print(" CLK_I2S_APB"); }
+    if (bitRead(PM->APBCMASK.reg, 21)) opts.out.print(" CLK_AC1_APB");
+    // undefined                  22
+    // undefined                  23
+    if (bitRead(PM->APBCMASK.reg, 24)) opts.out.print(" CLK_TCC3_APB");
     PRINTNL();
 }
 

@@ -27,8 +27,7 @@ SOFTWARE.
 */
 
 /*
-NOTE_1:
-    Refers to SAM D21/DA1 Family datasheet revision F (March 2020).
+DSrevF:  Refers to SAM D21/DA1 Family datasheet revision F (March 2020).
 */
 
 
@@ -38,7 +37,6 @@ NOTE_1:
 
 static const char* ZeroRegs__DISABLED = "--disabled--";
 static const char* ZeroRegs__RESERVED = "--reserved--";
-static const char* ZeroRegs__UNKNOWN = "--unknown--";
 static const char* ZeroRegs__empty = "";
 #define PRINTFLAG(x,y) do { if (x.bit.y) { opts.out.print(" " #y); } } while(0)
 #define PRINTHEX(x) do { opts.out.print("0x"); opts.out.print(x, HEX); } while(0)
@@ -269,7 +267,7 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
     PRINTNL();
 
     for (uint8_t chid = 0; chid < 12; chid++) {
-        // [24.6.2.4 NOTE_1] It is possible to read out the configuration of a
+        // [24.6.2.4 DSrevF] It is possible to read out the configuration of a
         // channel by first selecting the channel by writing to CHANNEL.CHANNEL
         // using a, 8-bit write, and then performing a read of the CHANNEL
         // register.
@@ -305,7 +303,7 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
     }
 
     for (uint8_t uid = 0; uid <= 0x24; uid++) {
-        // [24.6.2.3 NOTE_1] It is possible to read out the configuration of a
+        // [24.6.2.3 DSrevF] It is possible to read out the configuration of a
         // user by first selecting the user by writing to USER.USER using an
         // 8-bit write and then performing a read of the 16-bit USER register.
         WRITE8(EVSYS->USER.reg, uid);
@@ -334,111 +332,85 @@ void printZeroRegEVSYS(ZeroRegOptions &opts) {
 }
 
 
-static const char gclk_name_00[] = "DFLL48M_REF";
-static const char gclk_name_01[] = "DPLL";
-static const char gclk_name_02[] = "DPLL_32K";
-static const char gclk_name_03[] = "WDT";
-static const char gclk_name_04[] = "RTC";
-static const char gclk_name_05[] = "EIC";
-static const char gclk_name_06[] = "USB";
-static const char gclk_name_07[] = "EVSYS_CHANNEL_0";
-static const char gclk_name_08[] = "EVSYS_CHANNEL_1";
-static const char gclk_name_09[] = "EVSYS_CHANNEL_2";
-static const char gclk_name_10[] = "EVSYS_CHANNEL_3";
-static const char gclk_name_11[] = "EVSYS_CHANNEL_4";
-static const char gclk_name_12[] = "EVSYS_CHANNEL_5";
-static const char gclk_name_13[] = "EVSYS_CHANNEL_6";
-static const char gclk_name_14[] = "EVSYS_CHANNEL_7";
-static const char gclk_name_15[] = "EVSYS_CHANNEL_8";
-static const char gclk_name_16[] = "EVSYS_CHANNEL_9";
-static const char gclk_name_17[] = "EVSYS_CHANNEL_10";
-static const char gclk_name_18[] = "EVSYS_CHANNEL_11";
-static const char gclk_name_19[] = "SERCOMx_SLOW";
-static const char gclk_name_20[] = "SERCOM0_CORE";
-static const char gclk_name_21[] = "SERCOM1_CORE";
-static const char gclk_name_22[] = "SERCOM2_CORE";
-static const char gclk_name_23[] = "SERCOM3_CORE";
-static const char gclk_name_24[] = "SERCOM4_CORE";
-static const char gclk_name_25[] = "SERCOM5_CORE";
-static const char gclk_name_26[] = "TCC0_TCC1";
-static const char gclk_name_27[] = "TCC2_TC3";
-static const char gclk_name_28[] = "TC4_TC5";
-static const char gclk_name_29[] = "TC6_TC7";
-static const char gclk_name_30[] = "ADC";
-static const char gclk_name_31[] = "AC_DIG";
-static const char gclk_name_32[] = "AC_ANA";
-static const char gclk_name_33[] = "DAC";
-static const char gclk_name_34[] = "PTC";
-static const char gclk_name_35[] = "I2S_0";
-static const char gclk_name_36[] = "I2S_1";
-static const char* const gclk_names[] = {
-    gclk_name_00, gclk_name_01, gclk_name_02, gclk_name_03, gclk_name_04, gclk_name_05, gclk_name_06, gclk_name_07, gclk_name_08, gclk_name_09,
-    gclk_name_10, gclk_name_11, gclk_name_12, gclk_name_13, gclk_name_14, gclk_name_15, gclk_name_16, gclk_name_17, gclk_name_18, gclk_name_19,
-    gclk_name_20, gclk_name_21, gclk_name_22, gclk_name_23, gclk_name_24, gclk_name_25, gclk_name_26, gclk_name_27, gclk_name_28, gclk_name_29,
-    gclk_name_30, gclk_name_31, gclk_name_32, gclk_name_33, gclk_name_34, gclk_name_35, gclk_name_36,
+static const char ZeroRegsGCLK_NAME00[] = "DFLL48M_REF";
+static const char ZeroRegsGCLK_NAME01[] = "DPLL";
+static const char ZeroRegsGCLK_NAME02[] = "DPLL_32K";
+static const char ZeroRegsGCLK_NAME03[] = "WDT";
+static const char ZeroRegsGCLK_NAME04[] = "RTC";
+static const char ZeroRegsGCLK_NAME05[] = "EIC";
+static const char ZeroRegsGCLK_NAME06[] = "USB";
+static const char ZeroRegsGCLK_NAME07[] = "EVSYS_CHANNEL_0";
+static const char ZeroRegsGCLK_NAME08[] = "EVSYS_CHANNEL_1";
+static const char ZeroRegsGCLK_NAME09[] = "EVSYS_CHANNEL_2";
+static const char ZeroRegsGCLK_NAME0A[] = "EVSYS_CHANNEL_3";
+static const char ZeroRegsGCLK_NAME0B[] = "EVSYS_CHANNEL_4";
+static const char ZeroRegsGCLK_NAME0C[] = "EVSYS_CHANNEL_5";
+static const char ZeroRegsGCLK_NAME0D[] = "EVSYS_CHANNEL_6";
+static const char ZeroRegsGCLK_NAME0E[] = "EVSYS_CHANNEL_7";
+static const char ZeroRegsGCLK_NAME0F[] = "EVSYS_CHANNEL_8";
+static const char ZeroRegsGCLK_NAME10[] = "EVSYS_CHANNEL_9";
+static const char ZeroRegsGCLK_NAME11[] = "EVSYS_CHANNEL_10";
+static const char ZeroRegsGCLK_NAME12[] = "EVSYS_CHANNEL_11";
+static const char ZeroRegsGCLK_NAME13[] = "SERCOMx_SLOW";
+static const char ZeroRegsGCLK_NAME14[] = "SERCOM0_CORE";
+static const char ZeroRegsGCLK_NAME15[] = "SERCOM1_CORE";
+static const char ZeroRegsGCLK_NAME16[] = "SERCOM2_CORE";
+static const char ZeroRegsGCLK_NAME17[] = "SERCOM3_CORE";
+static const char ZeroRegsGCLK_NAME18[] = "SERCOM4_CORE";
+static const char ZeroRegsGCLK_NAME19[] = "SERCOM5_CORE";
+static const char ZeroRegsGCLK_NAME1A[] = "TCC0_TCC1";
+static const char ZeroRegsGCLK_NAME1B[] = "TCC2_TC3";
+static const char ZeroRegsGCLK_NAME1C[] = "TC4_TC5";
+static const char ZeroRegsGCLK_NAME1D[] = "TC6_TC7";
+static const char ZeroRegsGCLK_NAME1E[] = "ADC";
+static const char ZeroRegsGCLK_NAME1F[] = "AC_DIG";
+static const char ZeroRegsGCLK_NAME20[] = "AC_ANA";
+static const char ZeroRegsGCLK_NAME21[] = "DAC";
+static const char ZeroRegsGCLK_NAME22[] = "PTC";
+static const char ZeroRegsGCLK_NAME23[] = "I2S_0";
+static const char ZeroRegsGCLK_NAME24[] = "I2S_1";
+static const char ZeroRegsGCLK_NAME25[] = "TCC3";
+static const char* const ZeroRegsGCLK_NAMEs[] = {
+    ZeroRegsGCLK_NAME00, ZeroRegsGCLK_NAME01, ZeroRegsGCLK_NAME02, ZeroRegsGCLK_NAME03, ZeroRegsGCLK_NAME04, ZeroRegsGCLK_NAME05, ZeroRegsGCLK_NAME06, ZeroRegsGCLK_NAME07,
+    ZeroRegsGCLK_NAME08, ZeroRegsGCLK_NAME09, ZeroRegsGCLK_NAME0A, ZeroRegsGCLK_NAME0B, ZeroRegsGCLK_NAME0C, ZeroRegsGCLK_NAME0D, ZeroRegsGCLK_NAME0E, ZeroRegsGCLK_NAME0F,
+    ZeroRegsGCLK_NAME10, ZeroRegsGCLK_NAME11, ZeroRegsGCLK_NAME12, ZeroRegsGCLK_NAME13, ZeroRegsGCLK_NAME14, ZeroRegsGCLK_NAME15, ZeroRegsGCLK_NAME16, ZeroRegsGCLK_NAME17,
+    ZeroRegsGCLK_NAME18, ZeroRegsGCLK_NAME19, ZeroRegsGCLK_NAME1A, ZeroRegsGCLK_NAME1B, ZeroRegsGCLK_NAME1C, ZeroRegsGCLK_NAME1D, ZeroRegsGCLK_NAME1E, ZeroRegsGCLK_NAME1F,
+    ZeroRegsGCLK_NAME20, ZeroRegsGCLK_NAME21, ZeroRegsGCLK_NAME22, ZeroRegsGCLK_NAME23, ZeroRegsGCLK_NAME24, ZeroRegsGCLK_NAME25,
 };
 void printZeroRegGCLK(ZeroRegOptions &opts) {
     while (GCLK->CTRL.bit.SWRST || GCLK->STATUS.bit.SYNCBUSY) {}
     opts.out.println("--------------------------- GCLK");
 
-    opts.out.println("GCLK_MAIN:  GEN00 (always)");
-    for (uint8_t gclkid = 0; gclkid < 37; gclkid++) {
-        // [14.8.3] To read the CLKCTRL register, first do an 8-bit write to the
-        // CLKCTRL.ID bit group with the ID of the generic clock whose configuration
-        // is to be read, and then read the CLKCTRL register.
-        WRITE8(GCLK->CLKCTRL.reg, gclkid);
-        // FUTURE: better way to wait until write has synchronized
-        delay(1);
-        if (!GCLK->CLKCTRL.bit.CLKEN && !opts.showDisabled) {
-            continue;
-        }
-        opts.out.print("GCLK_");
-        opts.out.print(gclk_names[gclkid]);
-        opts.out.print(":  ");
-        if (GCLK->CLKCTRL.bit.CLKEN) {
-            opts.out.print("GEN");
-            PRINTPAD2(GCLK->CLKCTRL.bit.GEN);
-            PRINTFLAG(GCLK->CLKCTRL, WRTLOCK);
-            PRINTNL();
-        } else {
-            opts.out.println(ZeroRegs__DISABLED);
-        }
-    }
-
     for (uint8_t genid = 0; genid < 0x9; genid++) {
-        // [14.8.4] To read the GENCTRL register, first do an 8-bit write to the
-        // GENCTRL.ID bit group with the ID of the generic clock generator whose
-        // configuration is to be read, and then read the GENCTRL register.
+        // see [15.6.4.1 DSrevF] Indirect Access
         WRITE8(GCLK->GENCTRL.reg, genid);
-        // FUTURE: better way to wait until write has synchronized
+        //FUTURE -- better way to wait until write has synchronized
         delay(1);
-
         if (!GCLK->GENCTRL.bit.GENEN && !opts.showDisabled) {
             continue;
         }
         opts.out.print("GEN");
         PRINTPAD2(genid);
         opts.out.print(":  ");
-        if (!GCLK->GENCTRL.bit.GENEN) {
-            opts.out.println(ZeroRegs__DISABLED);
-            continue;
-        }
+        PRINTFLAG(GCLK->GENCTRL, GENEN);
         switch (GCLK->GENCTRL.bit.SRC) {
             case 0x0: opts.out.print("XOSC"); break;
-            case 0x1: opts.out.print("GCLKIN"); break;
-            case 0x2: opts.out.print("GCLKGEN1"); break;
+            case 0x1:
+                      //FUTURE -- lookup port pin(s)
+                      opts.out.print("GCLKIN");
+                      break;
+            case 0x2: opts.out.print("GEN01"); break;
             case 0x3: opts.out.print("OSCULP32K"); break;
             case 0x4: opts.out.print("OSC32K"); break;
             case 0x5: opts.out.print("XOSC32K"); break;
             case 0x6: opts.out.print("OSC8M"); break;
             case 0x7: opts.out.print("DFLL48M"); break;
-            case 0x8: opts.out.print("FDFLL96M"); break;
+            case 0x8: opts.out.print("FDPLL96M"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
         }
-        // [14.8.5] To read the GENDIV register, first do an 8-bit write to the
-        // GENDIV.ID bit group with the ID of the generic clock generator whose
-        // configuration is to be read, and then read the GENDIV register.
+        // see [15.6.4.1 DSrevF] Indirect Access
         WRITE8(GCLK->GENDIV.reg, genid);
-        // FUTURE: better way to wait until write has synchronized
+        //FUTURE -- better way to wait until write has synchronized
         delay(1);
         if (GCLK->GENCTRL.bit.DIVSEL) {
             opts.out.print("/");
@@ -450,9 +422,29 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
             }
         }
         PRINTFLAG(GCLK->GENCTRL, IDC);
-        PRINTFLAG(GCLK->GENCTRL, OOV);
-        PRINTFLAG(GCLK->GENCTRL, OE);
+        opts.out.print(" OOV=");
+        opts.out.print(GCLK->GENCTRL.bit.OOV);
+        PRINTFLAG(GCLK->GENCTRL, OE);   //FUTURE -- lookup port pin(s)
         PRINTFLAG(GCLK->GENCTRL, RUNSTDBY);
+        PRINTNL();
+    }
+
+    opts.out.println("GCLK_MAIN:  GEN00 (always)");
+    for (uint8_t gclkid = 0; gclkid < 37; gclkid++) {
+        // see [15.6.4.1 DSrevF] Indirect Access
+        WRITE8(GCLK->CLKCTRL.reg, gclkid);
+        //FUTURE -- better way to wait until write has synchronized
+        delay(1);
+        if (!GCLK->CLKCTRL.bit.CLKEN && !opts.showDisabled) {
+            continue;
+        }
+        opts.out.print("GCLK_");
+        opts.out.print(ZeroRegsGCLK_NAMEs[gclkid]);
+        opts.out.print(": ");
+        PRINTFLAG(GCLK->CLKCTRL, CLKEN);
+        opts.out.print(" GEN");
+        PRINTPAD2(GCLK->CLKCTRL.bit.GEN);
+        PRINTFLAG(GCLK->CLKCTRL, WRTLOCK);
         PRINTNL();
     }
 }
@@ -1453,8 +1445,8 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
 
 void printZeroRegs(ZeroRegOptions &opts) {
     // show clocking system
-    printZeroRegGCLK(opts);
     printZeroRegSYSCTRL(opts);
+    printZeroRegGCLK(opts);
 
     // show core peripherals
     printZeroRegDMAC(opts);

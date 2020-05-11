@@ -1246,68 +1246,6 @@ void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
 
 void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- SYSCTRL");
-    //FUTURE -- reorder to better illustrate system versus subperipheral
-
-    if (SYSCTRL->XOSC.bit.ENABLE || opts.showDisabled) {
-        opts.out.print("XOSC: ");
-        PRINTFLAG(SYSCTRL->XOSC, ENABLE);
-        PRINTFLAG(SYSCTRL->XOSC, XTALEN);
-        PRINTFLAG(SYSCTRL->XOSC, RUNSTDBY);
-        PRINTFLAG(SYSCTRL->XOSC, ONDEMAND);
-        PRINTFLAG(SYSCTRL->XOSC, AMPGC);
-        opts.out.print(" gain=");
-        switch (SYSCTRL->XOSC.bit.GAIN) {
-            case 0x0: opts.out.print("2MHz"); break;
-            case 0x1: opts.out.print("4MHz"); break;
-            case 0x2: opts.out.print("8MHz"); break;
-            case 0x3: opts.out.print("16MHz"); break;
-            case 0x4: opts.out.print("30MHz"); break;
-        }
-        opts.out.print(" startup=");
-        switch (SYSCTRL->XOSC.bit.STARTUP) {
-            case 0x0: opts.out.print("31us"); break;
-            case 0x1: opts.out.print("61us"); break;
-            case 0x2: opts.out.print("122us"); break;
-            case 0x3: opts.out.print("244us"); break;
-            case 0x4: opts.out.print("488us"); break;
-            case 0x5: opts.out.print("977us"); break;
-            case 0x6: opts.out.print("1953us"); break;
-            case 0x7: opts.out.print("3906us"); break;
-            case 0x8: opts.out.print("7813us"); break;
-            case 0x9: opts.out.print("15625us"); break;
-            case 0xA: opts.out.print("31250us"); break;
-            case 0xB: opts.out.print("62500us"); break;
-            case 0xC: opts.out.print("125ms"); break;
-            case 0xD: opts.out.print("250ms"); break;
-            case 0xE: opts.out.print("500ms"); break;
-            case 0xF: opts.out.print("1s"); break;
-        }
-        PRINTNL();
-    }
-
-    if (SYSCTRL->XOSC32K.bit.ENABLE || opts.showDisabled) {
-        opts.out.print("XOSC32K: ");
-        PRINTFLAG(SYSCTRL->XOSC32K, ENABLE);
-        PRINTFLAG(SYSCTRL->XOSC32K, XTALEN);
-        PRINTFLAG(SYSCTRL->XOSC32K, EN32K);
-        PRINTFLAG(SYSCTRL->XOSC32K, EN1K);
-        PRINTFLAG(SYSCTRL->XOSC32K, AAMPEN);
-        PRINTFLAG(SYSCTRL->XOSC32K, RUNSTDBY);
-        PRINTFLAG(SYSCTRL->XOSC32K, ONDEMAND);
-        PRINTFLAG(SYSCTRL->XOSC32K, WRTLOCK);
-        opts.out.print(" startup=");
-        switch (SYSCTRL->XOSC32K.bit.STARTUP) {
-            case 0x0: opts.out.print("122us"); break;
-            case 0x1: opts.out.print("1068us"); break;
-            case 0x2: opts.out.print("62592us"); break;
-            case 0x3: opts.out.print("125092us"); break;
-            case 0x4: opts.out.print("500092us"); break;
-            case 0x5: opts.out.print("1000092us"); break;
-            case 0x6: opts.out.print("2000092us"); break;
-            case 0x7: opts.out.print("4000092us"); break;
-        }
-        PRINTNL();
-    }
 
     if (SYSCTRL->OSC32K.bit.ENABLE || opts.showDisabled) {
         opts.out.print("OSC32K: ");
@@ -1317,26 +1255,16 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTFLAG(SYSCTRL->OSC32K, RUNSTDBY);
         PRINTFLAG(SYSCTRL->OSC32K, ONDEMAND);
         PRINTFLAG(SYSCTRL->OSC32K, WRTLOCK);
-        opts.out.print(" startup=");
-        switch (SYSCTRL->OSC32K.bit.STARTUP) {
-            case 0x0: opts.out.print("92us"); break;
-            case 0x1: opts.out.print("122us"); break;
-            case 0x2: opts.out.print("183us"); break;
-            case 0x3: opts.out.print("305us"); break;
-            case 0x4: opts.out.print("549us"); break;
-            case 0x5: opts.out.print("1038us"); break;
-            case 0x6: opts.out.print("2014us"); break;
-            case 0x7: opts.out.print("3967us"); break;
-        }
+        opts.out.print(" STARTUP=");
+        PRINTHEX(SYSCTRL->OSC32K.bit.STARTUP);
         opts.out.print(" CALIB=");
         PRINTHEX(SYSCTRL->OSC32K.bit.CALIB);
         PRINTNL();
     }
 
-    opts.out.print("OSCULP32K: ");
-    PRINTFLAG(SYSCTRL->OSCULP32K, WRTLOCK);
-    opts.out.print(" CALIB=");
+    opts.out.print("OSCULP32K:  CALIB=");
     PRINTHEX(SYSCTRL->OSCULP32K.bit.CALIB);
+    PRINTFLAG(SYSCTRL->OSCULP32K, WRTLOCK);
     PRINTNL();
 
     if (SYSCTRL->OSC8M.bit.ENABLE || opts.showDisabled) {
@@ -1358,10 +1286,47 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTNL();
     }
 
+    if (SYSCTRL->XOSC.bit.ENABLE || opts.showDisabled) {
+        opts.out.print("XOSC: ");
+        PRINTFLAG(SYSCTRL->XOSC, ENABLE);
+        PRINTFLAG(SYSCTRL->XOSC, XTALEN);
+        PRINTFLAG(SYSCTRL->XOSC, RUNSTDBY);
+        PRINTFLAG(SYSCTRL->XOSC, ONDEMAND);
+        PRINTFLAG(SYSCTRL->XOSC, AMPGC);
+        opts.out.print(" gain=");
+        switch (SYSCTRL->XOSC.bit.GAIN) {
+            case 0x0: opts.out.print("2MHz"); break;
+            case 0x1: opts.out.print("4MHz"); break;
+            case 0x2: opts.out.print("8MHz"); break;
+            case 0x3: opts.out.print("16MHz"); break;
+            case 0x4: opts.out.print("30MHz"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        opts.out.print(" STARTUP=");
+        PRINTHEX(SYSCTRL->XOSC.bit.STARTUP);
+        PRINTNL();
+    }
+
+    if (SYSCTRL->XOSC32K.bit.ENABLE || opts.showDisabled) {
+        opts.out.print("XOSC32K: ");
+        PRINTFLAG(SYSCTRL->XOSC32K, ENABLE);
+        PRINTFLAG(SYSCTRL->XOSC32K, XTALEN);
+        PRINTFLAG(SYSCTRL->XOSC32K, EN32K);
+        PRINTFLAG(SYSCTRL->XOSC32K, EN1K);
+        PRINTFLAG(SYSCTRL->XOSC32K, AAMPEN);
+        PRINTFLAG(SYSCTRL->XOSC32K, RUNSTDBY);
+        PRINTFLAG(SYSCTRL->XOSC32K, ONDEMAND);
+        PRINTFLAG(SYSCTRL->XOSC32K, WRTLOCK);
+        opts.out.print(" STARTUP=");
+        PRINTHEX(SYSCTRL->XOSC32K.bit.STARTUP);
+        PRINTNL();
+    }
+
     if (SYSCTRL->DFLLCTRL.bit.ENABLE || opts.showDisabled) {
         opts.out.print("DFLL: ");
         PRINTFLAG(SYSCTRL->DFLLCTRL, ENABLE);
-        PRINTFLAG(SYSCTRL->DFLLCTRL, MODE);
+        opts.out.print(" mode=");
+        opts.out.print(SYSCTRL->DFLLCTRL.bit.MODE ? "closed-loop" : "open-loop");
         PRINTFLAG(SYSCTRL->DFLLCTRL, STABLE);
         PRINTFLAG(SYSCTRL->DFLLCTRL, LLAW);
         PRINTFLAG(SYSCTRL->DFLLCTRL, USBCRM);
@@ -1371,6 +1336,40 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
         PRINTFLAG(SYSCTRL->DFLLCTRL, QLDIS);
         PRINTFLAG(SYSCTRL->DFLLCTRL, BPLCKC);
         PRINTFLAG(SYSCTRL->DFLLCTRL, WAITLOCK);
+        if (SYSCTRL->DFLLCTRL.bit.MODE == 1) {
+            opts.out.print(" MUL=");
+            opts.out.print(SYSCTRL->DFLLMUL.bit.MUL);
+        }
+        PRINTNL();
+    }
+
+    if (SYSCTRL->DPLLCTRLA.bit.ENABLE || opts.showDisabled) {
+        opts.out.print("DPLL: ");
+        PRINTFLAG(SYSCTRL->DPLLCTRLA, ENABLE);
+        PRINTFLAG(SYSCTRL->DPLLCTRLA, RUNSTDBY);
+        PRINTFLAG(SYSCTRL->DPLLCTRLA, ONDEMAND);
+        //FUTURE -- calculate actual clock speed [out = REFCLK * (LDR+1+(LDRFRAC/16))]
+        opts.out.print(" refclk=");
+        switch (SYSCTRL->DPLLCTRLB.bit.REFCLK) {
+            case 0x0: opts.out.print("XOSC32"); break;
+            case 0x1:
+                      opts.out.print("XOSC/");
+                      PRINTSCALE(SYSCTRL->DPLLCTRLB.bit.DIV + 1);
+                      break;
+            case 0x2: opts.out.print("GCLK_DPLL"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        opts.out.print(" ldr=");
+        opts.out.print(SYSCTRL->DPLLRATIO.bit.LDR);
+        opts.out.print(".");
+        opts.out.print(SYSCTRL->DPLLRATIO.bit.LDRFRAC);
+        opts.out.print(" FILTER=");
+        PRINTHEX(SYSCTRL->DPLLCTRLB.bit.FILTER);
+        PRINTFLAG(SYSCTRL->DPLLCTRLB, LPEN);
+        PRINTFLAG(SYSCTRL->DPLLCTRLB, WUF);
+        opts.out.print(" LTIME=");
+        PRINTHEX(SYSCTRL->DPLLCTRLB.bit.LTIME);
+        PRINTFLAG(SYSCTRL->DPLLCTRLB, LBYPASS);
         PRINTNL();
     }
 
@@ -1386,9 +1385,10 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
             case 0x0: opts.out.print("NONE"); break;
             case 0x1: opts.out.print("RESET"); break;
             case 0x2: opts.out.print("INT"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
         }
         opts.out.print(" psel=");
-        PRINTSCALE(SYSCTRL->BOD33.bit.PSEL);
+        PRINTSCALE(SYSCTRL->BOD33.bit.PSEL + 1);
         opts.out.print(" LEVEL=");
         PRINTHEX(SYSCTRL->BOD33.bit.LEVEL);
         PRINTNL();
@@ -1405,14 +1405,6 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
     opts.out.print(" CALIB=");
     PRINTHEX(SYSCTRL->VREF.bit.CALIB);
     PRINTNL();
-
-    if (SYSCTRL->DPLLCTRLA.bit.ENABLE || opts.showDisabled) {
-        opts.out.print("DPLL: ");
-        PRINTFLAG(SYSCTRL->DPLLCTRLA, ENABLE);
-        PRINTFLAG(SYSCTRL->DPLLCTRLA, RUNSTDBY);
-        PRINTFLAG(SYSCTRL->DPLLCTRLA, ONDEMAND);
-        PRINTNL();
-    }
 }
 
 

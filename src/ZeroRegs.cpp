@@ -1440,14 +1440,14 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
     PRINTFLAG(WDT->CTRL, ALWAYSON);
     PRINTNL();
 
-    opts.out.print("CONFIG:  per=");
-    PRINTSCALE(3 + WDT->CONFIG.bit.PER);
-    opts.out.print(" window=");
-    PRINTSCALE(3 + WDT->CONFIG.bit.WINDOW);
+    opts.out.print("CONFIG:  PER=");
+    PRINTHEX(WDT->CONFIG.bit.PER);
+    opts.out.print(" WINDOW=");
+    PRINTHEX(WDT->CONFIG.bit.WINDOW);
     PRINTNL();
 
-    opts.out.print("EWCTRL:  ewoffset=");
-    PRINTSCALE(3 + WDT->EWCTRL.bit.EWOFFSET);
+    opts.out.print("EWCTRL:  EWOFFSET=");
+    PRINTHEX(WDT->EWCTRL.bit.EWOFFSET);
     PRINTNL();
 
     opts.out.print("NVM user row: ");
@@ -1455,12 +1455,12 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
     opts.out.print(READFUSE(WDT, ENABLE));
     opts.out.print(" ALWAYSON=");
     opts.out.print(READFUSE(WDT, ALWAYSON));
-    opts.out.print(" per=");
-    PRINTSCALE(3 + READFUSE(WDT, PER));
-    opts.out.print(" window=");
-    PRINTSCALE(3 + READ2FUSES(WDT, WINDOW, 1));
-    opts.out.print(" ewoffset=");
-    PRINTSCALE(3 + READFUSE(WDT, EWOFFSET));
+    opts.out.print(" PER=");
+    PRINTHEX(READFUSE(WDT, PER));
+    opts.out.print(" WINDOW=");
+    PRINTHEX(READ2FUSES(WDT, WINDOW, 1));
+    opts.out.print(" EWOFFSET=");
+    PRINTHEX(READFUSE(WDT, EWOFFSET));
     opts.out.print(" WEN=");
     opts.out.print(READFUSE(WDT, WEN));
     PRINTNL();

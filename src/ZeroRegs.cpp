@@ -890,7 +890,7 @@ void printZeroRegPORT(ZeroRegOptions &opts) {
 
 void printZeroRegPORT_Arduino(ZeroRegOptions &opts) {
     opts.out.println("--------------------------- ARDUINO PINS");
-    uint8_t aid = 0;
+    int8_t aid = -1;
     for (uint8_t did = 0; did < PINS_COUNT; did++) {
         PinDescription pinDesc = g_APinDescription[did];
         uint8_t gid = pinDesc.ulPort;
@@ -899,9 +899,19 @@ void printZeroRegPORT_Arduino(ZeroRegOptions &opts) {
             continue;
         }
         if (pinDesc.ulPinType == PIO_ANALOG) {
+            aid++;
+        }
+        uint32_t dir = (PORT->Group[gid].DIR.bit.DIR & (1 << pid));
+        uint8_t inen = PORT->Group[gid].PINCFG[pid].bit.INEN;
+        uint8_t pullen = PORT->Group[gid].PINCFG[pid].bit.PULLEN;
+        uint8_t pmuxen = PORT->Group[gid].PINCFG[pid].bit.PMUXEN;
+        bool disabled = !dir && !inen && !pullen && !pmuxen;    // [23.6.3.4 DSrevF] Digital Functionality Disabled
+        if (disabled && !opts.showDisabled) {
+            continue;
+        }
+        if (pinDesc.ulPinType == PIO_ANALOG) {
             opts.out.print('A');
             opts.out.print(aid);
-            aid++;
         } else if (pinDesc.ulPinAttribute & PIN_ATTR_DIGITAL) {
             opts.out.print('D');
             opts.out.print(did);
@@ -909,12 +919,7 @@ void printZeroRegPORT_Arduino(ZeroRegOptions &opts) {
             opts.out.print(ZeroRegsPORT_pins[gid][pid].name);
         }
         opts.out.print(":  ");
-        uint32_t dir = (PORT->Group[gid].DIR.bit.DIR & (1 << pid));
-        uint8_t inen = PORT->Group[gid].PINCFG[pid].bit.INEN;
-        uint8_t pullen = PORT->Group[gid].PINCFG[pid].bit.PULLEN;
-        uint8_t pmuxen = PORT->Group[gid].PINCFG[pid].bit.PMUXEN;
-        bool disabled = !dir && !inen && !pullen && !pmuxen;    // [23.6.3.4 DSrevF] Digital Functionality Disabled
-        if (disabled && !opts.showDisabled) {
+        if (disabled) {
             opts.out.println(ZeroRegs__DISABLED);
         } else {
             printZeroRegPORT_pin(opts, gid, pid);

@@ -51,7 +51,7 @@ Each peripheral prints its own section, with a header.
 Example: `--------------------------- PERIPHERAL`
 
 Each register is printed on it's own line.
-Example: `REGISTRY:  ...fields...`.
+Example: `REGISTER:  ...fields...`.
 
 Register fields which are boolean flags are either shown (if set) or not shown (if not set).
 
@@ -73,7 +73,7 @@ Function Reference
 | type | name | description |
 | ---- | ---- | ---- |
 | `Print&` | `out` | object used for printing output |
-| `bool` | `showDisabled` | whether to show itmes which are disabled |
+| `bool` | `showDisabled` | whether to show items which are disabled |
 
 
 ### void printZeroRegs(ZeroRegOptions &opts)
@@ -193,6 +193,7 @@ PA27:  output INEN
 PA30:  pmux=SWCLK
 --------------------------- PORT B
 PB03:  output INEN
+PB09:  pmux=ADC:3,Y15
 PB10:  pmux=SERCOM4:2
 PB11:  pmux=SERCOM4:3
 PB30:  output DRVSTR
@@ -206,24 +207,9 @@ example output:
 --------------------------- ARDUINO PINS
 D0:  pmux=SERCOM0:3
 D1:  pmux=SERCOM0:2
-D2:  --disabled--
-D3:  --disabled--
-D4:  --disabled--
-D5:  --disabled--
-D6:  --disabled--
-D7:  --disabled--
-D8:  --disabled--
-D9:  --disabled--
-D10:  --disabled--
-D11:  --disabled--
 D12:  pmux=EIC:3 input INEN pull=UP
 D13:  output INEN
-A0:  --disabled--
-A1:  --disabled--
-A2:  --disabled--
-A3:  --disabled--
-A4:  --disabled--
-A5:  --disabled--
+A2:  pmux=ADC:3,Y15
 D20:  pmux=SERCOM3:0
 D21:  pmux=SERCOM3:1
 D22:  pmux=SERCOM4:0

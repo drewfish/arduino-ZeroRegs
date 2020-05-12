@@ -79,6 +79,7 @@ void printZeroRegEIC_SENSE(ZeroRegOptions &opts, uint8_t sense) {
         case 0x5: opts.out.print("LOW"); break;
     }
 }
+
 void printZeroRegEIC(ZeroRegOptions &opts) {
     while (EIC->CTRL.bit.SWRST || EIC->STATUS.bit.SYNCBUSY) {}
     if (!EIC->CTRL.bit.ENABLE && !opts.showDisabled) {
@@ -857,6 +858,7 @@ void printZeroRegPORT_pin(ZeroRegOptions &opts, uint8_t gid, uint8_t pid) {
         }
     }
 }
+
 void printZeroRegPORT(ZeroRegOptions &opts) {
     for (uint8_t gid = 0; gid < 2; gid++) {
         opts.out.print("--------------------------- PORT ");
@@ -927,7 +929,6 @@ void printZeroRegRTC_FREQCORR(ZeroRegOptions &opts, volatile RTC_FREQCORR_Type &
     opts.out.println(freqcorr.bit.VALUE);
 }
 
-
 void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
     opts.out.println("--------------------------- RTC MODE0");
 
@@ -960,7 +961,6 @@ void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
     PRINTHEX(mode.COMP[0].reg);
     PRINTNL();
 }
-
 
 void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
     opts.out.println("--------------------------- RTC MODE1");
@@ -1002,7 +1002,6 @@ void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
     PRINTHEX(mode.COMP[1].reg);
     PRINTNL();
 }
-
 
 void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
     opts.out.println("--------------------------- RTC MODE2");
@@ -1061,7 +1060,6 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
     PRINTNL();
 }
 
-
 void printZeroRegRTC(ZeroRegOptions &opts) {
     while (RTC->MODE0.CTRL.bit.SWRST || RTC->MODE0.STATUS.bit.SYNCBUSY) {}
     if (!opts.showDisabled && !RTC->MODE0.CTRL.bit.ENABLE) {
@@ -1094,6 +1092,7 @@ void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
         case 0x0: opts.out.print("SM<100kHz,FM<400kHz"); break;
         case 0x1: opts.out.print("FM+<1MHz"); break;
         case 0x2: opts.out.print("HS<3.4MHz"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTFLAG(i2cm.CTRLA, SCLSM);
     opts.out.print(" inactout=");
@@ -1108,17 +1107,33 @@ void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
 
     opts.out.print("CTRLB: ");
     PRINTFLAG(i2cm.CTRLB, QCEN);
-    if (i2cm.CTRLB.bit.SMEN) {
-        opts.out.print(" SMEN");
-        opts.out.print(" ackact=");
-        opts.out.print(i2cm.CTRLB.bit.ACKACT ? "ACK" : "NACK");
-    }
+    PRINTFLAG(i2cm.CTRLB, SMEN);
+    opts.out.print(" ackact=");
+    opts.out.print(i2cm.CTRLB.bit.ACKACT ? "NACK" : "ACK");
     PRINTNL();
 
-    opts.out.print("BAUD:  ");
-    PRINTHEX(i2cm.BAUD.reg);  // FUTURE
+    opts.out.print("BAUD: ");
+    opts.out.print(" BAUD=");
+    PRINTHEX(i2cm.BAUD.bit.BAUD);
+    opts.out.print(" BAUDLOW=");
+    PRINTHEX(i2cm.BAUD.bit.BAUDLOW);
+    opts.out.print(" HSBAUD=");
+    PRINTHEX(i2cm.BAUD.bit.HSBAUD);
+    opts.out.print(" HSBAUDLOW=");
+    PRINTHEX(i2cm.BAUD.bit.HSBAUDLOW);
+    PRINTNL();
+
+    opts.out.print("ADDR: ");
+    opts.out.print(" ADDR=");
+    PRINTHEX(i2cm.ADDR.bit.ADDR);
+    PRINTFLAG(i2cm.ADDR, LENEN);
+    PRINTFLAG(i2cm.ADDR, HS);
+    PRINTFLAG(i2cm.ADDR, TENBITEN);
+    opts.out.print(" LEN=");
+    PRINTHEX(i2cm.ADDR.bit.LEN);
     PRINTNL();
 }
+
 void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     opts.out.print("CTRLA: ");
     PRINTFLAG(i2cs.CTRLA, ENABLE);
@@ -1137,17 +1152,14 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
         case 0x0: opts.out.print("SM<100kHz,FM<400kHz"); break;
         case 0x1: opts.out.print("FM+<1MHz"); break;
         case 0x2: opts.out.print("HS<3.4MHz"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTFLAG(i2cs.CTRLA, SCLSM);
     PRINTFLAG(i2cs.CTRLA, LOWTOUTEN);
     PRINTNL();
 
     opts.out.print("CTRLB: ");
-    if (i2cs.CTRLB.bit.SMEN) {
-        opts.out.print(" SMEN");
-        opts.out.print(" ackact=");
-        opts.out.print(i2cs.CTRLB.bit.ACKACT ? "ACK" : "NACK");
-    }
+    PRINTFLAG(i2cs.CTRLB, SMEN);
     PRINTFLAG(i2cs.CTRLB, GCMD);
     PRINTFLAG(i2cs.CTRLB, AACKEN);
     opts.out.print(" amode=");
@@ -1155,7 +1167,10 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
         case 0x0: opts.out.print("MASK"); break;
         case 0x1: opts.out.print("2ADDRS"); break;
         case 0x2: opts.out.print("RANGE"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
+    opts.out.print(" ackact=");
+    opts.out.print(i2cs.CTRLB.bit.ACKACT ? "NACK" : "ACK");
     PRINTNL();
 
     opts.out.print("ADDR: ");
@@ -1167,6 +1182,7 @@ void printZeroRegSERCOM_I2CS(ZeroRegOptions &opts, SercomI2cs &i2cs) {
     PRINTHEX(i2cs.ADDR.bit.ADDRMASK);
     PRINTNL();
 }
+
 void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
     opts.out.print("CTRLA: ");
     PRINTFLAG(spi.CTRLA, ENABLE);
@@ -1183,39 +1199,51 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
     switch (spi.CTRLA.bit.DOPO) {
         case 0x0:
             opts.out.print("PAD0 sck=PAD1");
-            if (!master) opts.out.print(" ss=PAD2");
+            if (!master || spi.CTRLB.bit.MSSEN) {
+                opts.out.print(" ss=PAD2");
+            }
             break;
         case 0x1:
             opts.out.print("PAD2 sck=PAD3");
-            if (!master) opts.out.print(" ss=PAD1");
+            if (!master || spi.CTRLB.bit.MSSEN) {
+                opts.out.print(" ss=PAD1");
+            }
             break;
         case 0x2:
             opts.out.print("PAD3 sck=PAD1");
-            if (!master) opts.out.print(" ss=PAD2");
+            if (!master || spi.CTRLB.bit.MSSEN) {
+                opts.out.print(" ss=PAD2");
+            }
             break;
         case 0x3:
             opts.out.print("PAD0 sck=PAD3");
-            if (!master) opts.out.print(" ss=PAD1");
+            if (!master || spi.CTRLB.bit.MSSEN) {
+                opts.out.print(" ss=PAD1");
+            }
             break;
     }
     opts.out.print(" form=");
     switch (spi.CTRLA.bit.FORM) {
         case 0x0: opts.out.print("SPI"); break;
-        case 0x1: /* reserved */ break;
+        /*   0x1 */
         case 0x2: opts.out.print("SPI_ADDR"); break;
-        /* 0x3-0xF reserved */
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
-    opts.out.print(" cpha="); opts.out.print(spi.CTRLA.bit.CPHA ? "TRAILING" : "LEADING");
-    opts.out.print(" cpol="); opts.out.print(spi.CTRLA.bit.CPOL ? "HIGH" : "LOW");
-    opts.out.print(" dord="); opts.out.print(spi.CTRLA.bit.DORD ? "LSB" : "MSB");
+    opts.out.print(" cpha=");
+    opts.out.print(spi.CTRLA.bit.CPHA ? "TRAILING" : "LEADING");
+    opts.out.print(" cpol=");
+    opts.out.print(spi.CTRLA.bit.CPOL ? "HIGH" : "LOW");
+    opts.out.print(" dord=");
+    opts.out.print(spi.CTRLA.bit.DORD ? "LSB" : "MSB");
     PRINTNL();
 
+    while (spi.SYNCBUSY.bit.CTRLB) {}
     opts.out.print("CTRLB: ");
     opts.out.print(" chsize=");
     switch (spi.CTRLB.bit.CHSIZE) {
         case 0x0: opts.out.print("8bit"); break;
         case 0x1: opts.out.print("9bit"); break;
-        /* 0x2-0xF reserved */
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTFLAG(spi.CTRLB, PLOADEN);
     PRINTFLAG(spi.CTRLB, SSDE);
@@ -1225,12 +1253,13 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
         case 0x0: opts.out.print("MASK"); break;
         case 0x1: opts.out.print("2ADDRS"); break;
         case 0x2: opts.out.print("RANGE"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTFLAG(spi.CTRLB, RXEN);
     PRINTNL();
 
     opts.out.print("BAUD:  ");
-    PRINTHEX(spi.BAUD.reg);   // FUTURE
+    PRINTHEX(spi.BAUD.reg);
     PRINTNL();
 
     if (spi.CTRLA.bit.FORM == 0x2) {
@@ -1242,33 +1271,37 @@ void printZeroRegSERCOM_SPI(ZeroRegOptions &opts, SercomSpi &spi, bool master) {
         PRINTNL();
     }
 }
+
 void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
     opts.out.print("CTRLA: ");
     PRINTFLAG(usart.CTRLA, ENABLE);
     PRINTFLAG(usart.CTRLA, RUNSTDBY);
     PRINTFLAG(usart.CTRLA, IBON);
-    opts.out.print(" cmode="); opts.out.print(usart.CTRLA.bit.CMODE ? "SYNC" : "ASYNC");
-    opts.out.print(" cpol="); opts.out.print(usart.CTRLA.bit.CPOL ? "FALLING" : "RISING");
-    opts.out.print(" dord="); opts.out.print(usart.CTRLA.bit.CPOL ? "LSB" : "MSB");
     opts.out.print(" SAMPR=");
-    PRINTHEX(usart.CTRLA.bit.SAMPR);  // FUTURE
+    PRINTHEX(usart.CTRLA.bit.SAMPR);
     opts.out.print(" SAMPA=");
-    PRINTHEX(usart.CTRLA.bit.SAMPA);  // FUTURE
+    PRINTHEX(usart.CTRLA.bit.SAMPA);
+    opts.out.print(" cmode=");
+    opts.out.print(usart.CTRLA.bit.CMODE ? "SYNC" : "ASYNC");
+    opts.out.print(" cpol=");
+    opts.out.print(usart.CTRLA.bit.CPOL ? "FALLING" : "RISING");
+    opts.out.print(" dord=");
+    opts.out.print(usart.CTRLA.bit.CPOL ? "LSB" : "MSB");
     opts.out.print(" form=");
     switch(usart.CTRLA.bit.FORM) {
         case 0x0: opts.out.print("USART"); break;
-        case 0x1: opts.out.print("USART,PARITY"); break;
-        case 0x2: /* reserved */ break;
-        case 0x3: /* reserved */ break;
+        case 0x1: opts.out.print("USART+PARITY"); break;
+        /*   0x2 */
+        /*   0x3 */
         case 0x4: opts.out.print("AUTOBAUD"); break;
-        case 0x5: opts.out.print("AUTOBAUD,PARITY"); break;
-        /* 0x6-0xF reserved */
+        case 0x5: opts.out.print("AUTOBAUD+PARITY"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     switch (usart.CTRLA.bit.RXPO) {
-        case 0x0: opts.out.print(" RX=PAD0"); break;
-        case 0x1: opts.out.print(" RX=PAD1"); break;
-        case 0x2: opts.out.print(" RX=PAD2"); break;
-        case 0x3: opts.out.print(" RX=PAD3"); break;
+        case 0x0: opts.out.print(" rx=PAD0"); break;
+        case 0x1: opts.out.print(" rx=PAD1"); break;
+        case 0x2: opts.out.print(" rx=PAD2"); break;
+        case 0x3: opts.out.print(" rx=PAD3"); break;
     }
     switch (usart.CTRLA.bit.TXPO) {
         case 0x0:
@@ -1280,35 +1313,39 @@ void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
             if (usart.CTRLA.bit.MODE == 0) opts.out.print(" xck=PAD3");
             break;
         case 0x2:
-            opts.out.print(" tx=PAD0");
-            opts.out.print(" rts=PAD2");
-            opts.out.print(" cts=PAD3");
+            opts.out.print(" tx=PAD0 rts=PAD2 cts=PAD3");
             break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTNL();
 
+    while (usart.SYNCBUSY.bit.CTRLB) {}
     opts.out.print("CTRLB:  chsize=");
     switch (usart.CTRLB.bit.CHSIZE) {
         case 0x0: opts.out.print("8bit"); break;
         case 0x1: opts.out.print("9bit"); break;
-        case 0x2: /* reserved */ break;
-        case 0x3: /* reserved */ break;
-        case 0x4: /* reserved */ break;
+        /*   0x2 */
+        /*   0x3 */
+        /*   0x4 */
         case 0x5: opts.out.print("5bit"); break;
         case 0x6: opts.out.print("6bit"); break;
         case 0x7: opts.out.print("7bit"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTFLAG(usart.CTRLB, SBMODE);
     PRINTFLAG(usart.CTRLB, COLDEN);
     PRINTFLAG(usart.CTRLB, SFDE);
     PRINTFLAG(usart.CTRLB, ENC);
-    PRINTFLAG(usart.CTRLB, PMODE);
+    if (usart.CTRLA.bit.FORM == 1) {
+        opts.out.print(" pmode=");
+        opts.out.print(usart.CTRLB.bit.PMODE ? "ODD" : "EVEN");
+    }
     PRINTFLAG(usart.CTRLB, TXEN);
     PRINTFLAG(usart.CTRLB, RXEN);
     PRINTNL();
 
     opts.out.print("BAUD:  ");
-    PRINTHEX(usart.BAUD.reg); // FUTURE
+    PRINTHEX(usart.BAUD.reg);
     PRINTNL();
 
     if (usart.CTRLB.bit.ENC) {
@@ -1317,6 +1354,7 @@ void printZeroRegSERCOM_USART(ZeroRegOptions &opts, SercomUsart &usart) {
         PRINTNL();
     }
 }
+
 void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
     while (sercom->I2CM.CTRLA.bit.SWRST || sercom->I2CM.SYNCBUSY.reg) {}
     if (!sercom->I2CM.CTRLA.bit.ENABLE && !opts.showDisabled) {
@@ -1325,12 +1363,30 @@ void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx) {
     opts.out.print("--------------------------- SERCOM");
     opts.out.print(idx);
     switch (sercom->I2CM.CTRLA.bit.MODE) {
-        case 0x0: opts.out.println(" USART");       printZeroRegSERCOM_USART(opts, sercom->USART); break;
-        case 0x1: opts.out.println(" USART");       printZeroRegSERCOM_USART(opts, sercom->USART); break;
-        case 0x2: opts.out.println(" SPI slave");   printZeroRegSERCOM_SPI(opts, sercom->SPI, false); break;
-        case 0x3: opts.out.println(" SPI master");  printZeroRegSERCOM_SPI(opts, sercom->SPI, true); break;
-        case 0x4: opts.out.println(" I2C slave");   printZeroRegSERCOM_I2CS(opts, sercom->I2CS); break;
-        case 0x5: opts.out.println(" I2C master");  printZeroRegSERCOM_I2CM(opts, sercom->I2CM); break;
+        case 0x0:
+            opts.out.println(" USART (external clock)");
+            printZeroRegSERCOM_USART(opts, sercom->USART);
+            break;
+        case 0x1:
+            opts.out.println(" USART (internal clock)");
+            printZeroRegSERCOM_USART(opts, sercom->USART);
+            break;
+        case 0x2:
+            opts.out.println(" SPI slave");
+            printZeroRegSERCOM_SPI(opts, sercom->SPI, false);
+            break;
+        case 0x3:
+            opts.out.println(" SPI master");
+            printZeroRegSERCOM_SPI(opts, sercom->SPI, true);
+            break;
+        case 0x4:
+            opts.out.println(" I2C slave");
+            printZeroRegSERCOM_I2CS(opts, sercom->I2CS);
+            break;
+        case 0x5:
+            opts.out.println(" I2C master");
+            printZeroRegSERCOM_I2CM(opts, sercom->I2CM);
+            break;
     }
 }
 

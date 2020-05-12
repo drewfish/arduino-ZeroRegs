@@ -921,21 +921,24 @@ void printZeroRegPORT_Arduino(ZeroRegOptions &opts) {
 }
 
 
+void printZeroRegRTC_FREQCORR(ZeroRegOptions &opts, volatile RTC_FREQCORR_Type &freqcorr) {
+    opts.out.print("FREQCORR:  ");
+    opts.out.print(freqcorr.bit.SIGN ? '-' : '+');
+    opts.out.println(freqcorr.bit.VALUE);
+}
+
+
 void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
-    if (!RTC->MODE0.CTRL.bit.ENABLE && !opts.showDisabled) {
-        return;
-    }
     opts.out.println("--------------------------- RTC MODE0");
 
     opts.out.print("CTRL: ");
     PRINTFLAG(mode.CTRL, ENABLE);
-    opts.out.print(" prescaler=");
-    PRINTSCALE(mode.CTRL.bit.PRESCALER);
     PRINTFLAG(mode.CTRL, MATCHCLR);
-    PRINTNL();
-
-    opts.out.print("READREQ: ");
-    PRINTFLAG(mode.READREQ, RCONT);
+    opts.out.print(" PRESCALER=");
+    PRINTHEX(mode.CTRL.bit.PRESCALER);
+    opts.out.print("(GCLK_RTC/");
+    PRINTSCALE(mode.CTRL.bit.PRESCALER);
+    opts.out.print(")");
     PRINTNL();
 
     opts.out.print("EVCTRL: ");
@@ -951,9 +954,7 @@ void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
     PRINTFLAG(mode.EVCTRL, OVFEO);
     PRINTNL();
 
-    opts.out.print("FREQCORR:  ");
-    PRINTHEX(mode.FREQCORR.reg);
-    PRINTNL();
+    printZeroRegRTC_FREQCORR(opts, mode.FREQCORR);
 
     opts.out.print("COMP0:  ");
     PRINTHEX(mode.COMP[0].reg);
@@ -962,19 +963,15 @@ void printZeroRegRTC_MODE0(ZeroRegOptions &opts, RtcMode0 &mode) {
 
 
 void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
-    if (!RTC->MODE1.CTRL.bit.ENABLE && !opts.showDisabled) {
-        return;
-    }
     opts.out.println("--------------------------- RTC MODE1");
 
     opts.out.print("CTRL: ");
     PRINTFLAG(mode.CTRL, ENABLE);
-    opts.out.print(" prescaler=");
+    opts.out.print(" PRESCALER=");
+    PRINTHEX(mode.CTRL.bit.PRESCALER);
+    opts.out.print("(GCLK_RTC/");
     PRINTSCALE(mode.CTRL.bit.PRESCALER);
-    PRINTNL();
-
-    opts.out.print("READREQ: ");
-    PRINTFLAG(mode.READREQ, RCONT);
+    opts.out.print(")");
     PRINTNL();
 
     opts.out.print("EVCTRL: ");
@@ -991,11 +988,9 @@ void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
     PRINTFLAG(mode.EVCTRL, OVFEO);
     PRINTNL();
 
-    opts.out.print("FREQCORR:  ");
-    PRINTHEX(mode.FREQCORR.reg);
-    PRINTNL();
+    printZeroRegRTC_FREQCORR(opts, mode.FREQCORR);
 
-    opts.out.print("PER:  PER=");
+    opts.out.print("PER:  ");
     PRINTHEX(mode.PER.bit.PER);
     PRINTNL();
 
@@ -1010,21 +1005,17 @@ void printZeroRegRTC_MODE1(ZeroRegOptions &opts, RtcMode1 &mode) {
 
 
 void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
-    if (!RTC->MODE2.CTRL.bit.ENABLE && !opts.showDisabled) {
-        return;
-    }
     opts.out.println("--------------------------- RTC MODE2");
 
     opts.out.print("CTRL: ");
     PRINTFLAG(mode.CTRL, ENABLE);
-    opts.out.print(" prescaler=");
-    PRINTSCALE(mode.CTRL.bit.PRESCALER);
     PRINTFLAG(mode.CTRL, CLKREP);
     PRINTFLAG(mode.CTRL, MATCHCLR);
-    PRINTNL();
-
-    opts.out.print("READREQ: ");
-    PRINTFLAG(mode.READREQ, RCONT);
+    opts.out.print(" PRESCALER=");
+    PRINTHEX(mode.CTRL.bit.PRESCALER);
+    opts.out.print("(GCLK_RTC/");
+    PRINTSCALE(mode.CTRL.bit.PRESCALER);
+    opts.out.print(")");
     PRINTNL();
 
     opts.out.print("EVCTRL: ");
@@ -1040,11 +1031,9 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
     PRINTFLAG(mode.EVCTRL, OVFEO);
     PRINTNL();
 
-    opts.out.print("FREQCORR:  ");
-    PRINTHEX(mode.FREQCORR.reg);
-    PRINTNL();
+    printZeroRegRTC_FREQCORR(opts, mode.FREQCORR);
 
-    opts.out.print("ALARM:  ");
+    opts.out.print("ALARM0:  ");
     PRINTPAD2(mode.Mode2Alarm[0].ALARM.bit.YEAR);
     opts.out.print("-");
     PRINTPAD2(mode.Mode2Alarm[0].ALARM.bit.MONTH);
@@ -1058,7 +1047,7 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
     PRINTPAD2(mode.Mode2Alarm[0].ALARM.bit.SECOND);
     PRINTNL();
 
-    opts.out.print("MASK:  ");
+    opts.out.print("MASK0:  ");
     switch (mode.Mode2Alarm[0].MASK.bit.SEL) {
         case 0x0: opts.out.print("OFF"); break;
         case 0x1: opts.out.print("SS"); break;
@@ -1067,7 +1056,7 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
         case 0x4: opts.out.print("DD HH:MM:SS"); break;
         case 0x5: opts.out.print("MM-DD HH:MM:SS"); break;
         case 0x6: opts.out.print("YY-MM-DD HH:MM:SS"); break;
-        /* 0x7 reserved */
+        default: opts.out.print(ZeroRegs__RESERVED); break;
     }
     PRINTNL();
 }
@@ -1075,6 +1064,9 @@ void printZeroRegRTC_MODE2(ZeroRegOptions &opts, RtcMode2 &mode) {
 
 void printZeroRegRTC(ZeroRegOptions &opts) {
     while (RTC->MODE0.CTRL.bit.SWRST || RTC->MODE0.STATUS.bit.SYNCBUSY) {}
+    if (!opts.showDisabled && !RTC->MODE0.CTRL.bit.ENABLE) {
+        return;
+    }
     switch (RTC->MODE0.CTRL.bit.MODE) {
         case 0x0: printZeroRegRTC_MODE0(opts, RTC->MODE0); break;
         case 0x1: printZeroRegRTC_MODE1(opts, RTC->MODE1); break;

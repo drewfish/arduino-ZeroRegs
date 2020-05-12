@@ -249,12 +249,12 @@ Prints out the configuration registers for the `RTC` peripheral.
 example output:
 ```text
 --------------------------- RTC MODE2
-CTRL:  prescaler=1024
+CTRL:  PRESCALER=0xA(GCLK_RTC/1024)
 READREQ:
 EVCTRL:
 FREQCORR:  0x0
-ALARM:  00-00-00 00:00:00
-MASK:  SS
+ALARM0:  00-00-00 00:00:00
+MASK0:  SS
 ```
 
 

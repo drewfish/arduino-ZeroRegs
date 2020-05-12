@@ -116,16 +116,18 @@ Prints out the configuration registers for the `GCLK` peripheral.
 example output:
 ```text
 --------------------------- GCLK
-GEN00:  GENEN DFLL48M IDC OOV=0
-GEN01:  GENEN XOSC32K OOV=0
-GEN02:  GENEN XOSC32K/32 OOV=0
-GEN03:  GENEN OSC8M OOV=0
+GEN00:  GENEN DFLL48M IDC
+GEN01:  GENEN XOSC32K
+GEN02:  GENEN XOSC32K/32
+GEN03:  GENEN OSC8M
 GCLK_MAIN:  GEN00 (always)
 GCLK_DFLL48M_REF:  CLKEN GEN01
 GCLK_RTC:  CLKEN GEN02
 GCLK_EIC:  CLKEN GEN00
 GCLK_USB:  CLKEN GEN00
+GCLK_SERCOM0_CORE:  CLKEN GEN00
 GCLK_SERCOM3_CORE:  CLKEN GEN00
+GCLK_SERCOM4_CORE:  CLKEN GEN00
 GCLK_ADC:  CLKEN GEN00
 GCLK_DAC:  CLKEN GEN00
 ```
@@ -177,35 +179,23 @@ Prints out the configuration registers for the `PORT` peripheral.
 
 example output:
 ```text
---------------------------- PORT
-PA11 D0/RX:  pmux=SERCOM0:3
-PA10 D1/TX:  pmux=SERCOM0:2
-PA14 D2:  dir=IN INEN
-PA09 D3:  dir=IN INEN
-PA08 D4:  dir=IN INEN
-PA15 D5:  dir=IN INEN
-PA20 D6:  dir=IN INEN
-PA21 D7:  dir=IN INEN
-PA06 D8:  dir=IN INEN
-PA07 D9:  pmux=EIC:7
-PA18 D10:  dir=IN INEN
-PA16 D11:  pmux=SERCOM1:0
-PA19 D12:  pmux=SERCOM1:3
-PA17 D13:  pmux=SERCOM1:1
-PA02 A0:  pmux=AIN0/Y0/VOUT
-PA22 SDA:  pmux=SERCOM3:0
-PA23 SCL:  pmux=SERCOM3:1
-PA24 USB_DM:  pmux=USB:DM
-PA25 USB_DP:  pmux=USB:DP
-PA22 EDBG_SDA:  pmux=SERCOM3:0
-PA23 EDBG_SCL:  pmux=SERCOM3:1
-PA19 EDBG_MISO:  pmux=SERCOM1:3
-PA16 EDBG_MOSI:  pmux=SERCOM1:0
-PA18 EDBG_SS:  dir=IN INEN
-PA17 EDBG_SCK:  pmux=SERCOM1:1
-PA21 EDBG_GPIO1:  dir=IN INEN
-PA06 EDBG_GPIO2:  dir=IN INEN
-PA07 EDBG_GPIO3:  pmux=EIC:7
+--------------------------- PORT A
+PA10:  pmux=SERCOM0:2
+PA11:  pmux=SERCOM0:3
+PA12:  pmux=SERCOM4:0
+PA17:  output INEN
+PA19:  pmux=EIC:3 input INEN pull=UP
+PA22:  pmux=SERCOM3:0
+PA23:  pmux=SERCOM3:1
+PA24:  pmux=USB:DN
+PA25:  pmux=USB:DP
+PA27:  output INEN
+PA30:  pmux=SWCLK
+--------------------------- PORT B
+PB03:  output INEN
+PB10:  pmux=SERCOM4:2
+PB11:  pmux=SERCOM4:3
+PB30:  output DRVSTR
 ```
 
 ### void printZeroRegPORT_Arduino(ZeroRegOptions &opts)
@@ -214,8 +204,8 @@ Prints out the `PORT` configuration for the Arduino pins.
 example output:
 ```text
 --------------------------- ARDUINO PINS
-D0:  --disabled--
-D1:  --disabled--
+D0:  pmux=SERCOM0:3
+D1:  pmux=SERCOM0:2
 D2:  --disabled--
 D3:  --disabled--
 D4:  --disabled--
@@ -236,9 +226,9 @@ A4:  --disabled--
 A5:  --disabled--
 D20:  pmux=SERCOM3:0
 D21:  pmux=SERCOM3:1
-D22:  --disabled--
-D23:  --disabled--
-D24:  --disabled--
+D22:  pmux=SERCOM4:0
+D23:  pmux=SERCOM4:2
+D24:  pmux=SERCOM4:3
 D25:  output INEN
 ```
 
@@ -249,12 +239,11 @@ Prints out the configuration registers for the `RTC` peripheral.
 example output:
 ```text
 --------------------------- RTC MODE2
-CTRL:  PRESCALER=0xA(GCLK_RTC/1024)
-READREQ:
+CTRL:  ENABLE PRESCALER=0xA(GCLK_RTC/1024)
 EVCTRL:
-FREQCORR:  0x0
+FREQCORR:  +0
 ALARM0:  00-00-00 00:00:00
-MASK0:  SS
+MASK0:  OFF
 ```
 
 
@@ -263,8 +252,17 @@ Prints out the configuration registers for a `SERCOM` peripheral.
 
 example output:
 ```text
---------------------------- SERCOM1 SPI master
-CTRLA:  miso=PAD3 mosi=PAD0 sck=PAD1 form=SPI cpha=LEADING cpol=LOW dord=MSB
+--------------------------- SERCOM0 USART (internal clock)
+CTRLA:  ENABLE SAMPR=0x1 SAMPA=0x0 cmode=ASYNC cpol=RISING dord=MSB form=USART rx=PAD3 tx=PAD2
+CTRLB:  chsize=8bit TXEN RXEN
+BAUD:  0x8138
+--------------------------- SERCOM3 I2C master
+CTRLA:  ENABLE sdahold=DIS speed=SM<100kHz,FM<400kHz inactout=DIS
+CTRLB:  ackact=ACK
+BAUD:  BAUD=0xE8 BAUDLOW=0x0 HSBAUD=0x0 HSBAUDLOW=0x0
+ADDR:  ADDR=0x0 LEN=0x0
+--------------------------- SERCOM4 SPI master
+CTRLA:  ENABLE miso=PAD0 mosi=PAD2 sck=PAD3 form=SPI cpha=LEADING cpol=LOW dord=MSB
 CTRLB:  chsize=8bit amode=MASK RXEN
 BAUD:  0x5
 ```

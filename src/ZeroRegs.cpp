@@ -716,108 +716,202 @@ void printZeroRegPM(ZeroRegOptions &opts) {
 }
 
 
-struct Port_Pin {
-    const char *name;
-    uint8_t     grp;
-    uint8_t     idx;
-    const char *pmux[8];
+// [table 7-1 DSrevF]
+struct ZeroRegsPORT_PMUX {
+    char        id;
+    const char* name;
 };
-const Port_Pin port_pins[] = {
-    // This is a combination of the arduino pin description found at the top of
-    // packages/arduino/hardware/samd/1.6.2/variants/arduino_zero/variant.cpp
-    // and table 6-1 ("PORT Function Multiplexing") in the SAM-D21 datasheet.
-    // The peripheral name approach is:
-    //  - {peripheral}:{signal}
-    //  - peripheral is skipped if obvious
-    //      - FUTURE: add distinction between ADC and AC
-    //  - multiple options separated by slash ("/")
-    // zero name    group  index A          B                   C               D               E           F           G           H
-    { "D0/RX",          0, 11, { "EIC:11",  "AIN19/X3",         "SERCOM0:3",    "SERCOM2:3",    "TCC1:1",   "TCC0:3",   "I2S:FS0",  "GCLK:5" } },
-    { "D1/TX",          0, 10, { "EIC:10",  "AIN18/X2",         "SERCOM0:2",    "SERCOM2:2",    "TCC1:0",   "TCC0:2",   "I2S:SCK0", "GCLK:4" } },
-    { "D2",             0, 14, { "EIC:14",  NULL,               "SERCOM2:2",    "SERCOM4:2",    "TC3:0",    "TCC0:4",   NULL,       "GCLK:0" } },
-    { "D3",             0,  9, { "EIC:9",   "AIN17/X1",         "SERCOM0:1",    "SERCOM2:1",    "TCC0:1",   "TCC1:3",   "I2S:MCK0", NULL } },
-    { "D4",             0,  8, { "EIC:NMI", "AIN16/X0",         "SERCOM0:0",    "SERCOM2:0",    "TCC0:0",   "TCC1:2",   "I2S:SD1",  NULL } },
-    { "D5",             0, 15, { "EIC:15",  NULL,               "SERCOM2:3",    "SERCOM4:3",    "TC3:1",    "TCC0:5",   NULL,       "GCLK:1" } },
-    { "D6",             0, 20, { "EIC:4",   "X8",               "SERCOM5:2",    "SERCOM3:2",    "TC7:0",    "TCC0:6",   "I2S:SCK0", "GCLK:4" } },
-    { "D7",             0, 21, { "EIC:5",   "X9",               "SERCOM5:3",    "SERCOM3:3",    "TC7:1",    "TCC0:7",   "I2S:FS0",  "GCLK:5" } },
-    { "D8",             0,  6, { "EIC:6",   "AIN6/AIN2/Y4",     NULL,           "SERCOM0:2",    "TCC1:0",   NULL,       NULL,       NULL } },
-    { "D9",             0,  7, { "EIC:7",   "AIN7/AIN3/Y5",     NULL,           "SERCOM0:3",    "TCC1:1",   NULL,       "I2S:SD0",  NULL } },
-    { "D10",            0, 18, { "EIC:2",   "X6",               "SERCOM1:2",    "SERCOM3:2",    "TC3:0",    "TCC0:2",   NULL,       "AC:0" } },
-    { "D11",            0, 16, { "EIC:0",   "X4",               "SERCOM1:0",    "SERCOM3:0",    "TCC2:0",   "TCC0:6",   NULL,       "GCLK:2" } },
-    { "D12",            0, 19, { "EIC:3",   "X7",               "SERCOM1:3",    "SERCOM3:3",    "TC3:1",    "TCC0:3",   "I2S:SD0",  "AC:1" } },
-    { "D13",            0, 17, { "EIC:1",   "X5",               "SERCOM1:1",    "SERCOM3:1",    "TCC1:1",   "TCC0:7",   NULL,       "GCLK:3" } },
-    { "A0",             0,  2, { "EIC:2",   "AIN0/Y0/VOUT",     NULL,           NULL,           NULL,       NULL,       NULL,       NULL } },
-    { "A1",             1,  8, { "EIC:8",   "AIN2/Y14",         NULL,           "SERCOM4:0",    "TC4:0",    NULL,       NULL,       NULL } },
-    { "A2",             1,  9, { "EIC:9",   "AIN3/Y15",         NULL,           "SERCOM4:1",    "TC4:1",    NULL,       NULL,       NULL } },
-    { "A3",             0,  4, { "EIC:4",   "ADC:VREFB/AIN4/AIN0/Y2", NULL,     "SERCOM0:0",    "TCC0:0",   NULL,       NULL,       NULL } },
-    { "A4",             0,  5, { "EIC:5",   "AIN5/AIN1/Y3",     NULL,           "SERCOM0:1",    "TCC0:1",   NULL,       NULL,       NULL } },
-    { "A5",             1,  2, { "EIC:2",   "AIN10/Y8",         NULL,           "SERCOM5:0",    "TC6:0",    NULL,       NULL,       NULL } },
-    { "SDA",            0, 22, { "EIC:6",   "X10",              "SERCOM3:0",    "SERCOM5:0",    "TC4:0",    "TCC0:4",   NULL,       "GCLK:6" } },
-    { "SCL",            0, 23, { "EID:7",   "X11",              "SERCOM3:1",    "SERCOM5:1",    "TC4:1",    "TCC0:5",   "USB:SOF",  "GCLK:7" } },
-    { "SPI_MISO",       0, 12, { "EIC:12",  NULL,               "SERCOM2:0",    "SERCOM4:0",    "TCC2:0",   "TCC0:6",   NULL,       "AC:0" } },
-    { "SPI_MOSI",       1, 10, { "EIC:10",  NULL,               NULL,           "SERCOM4:2",    "TC5:0",    "TCC0:4",   "I2S:MCK1", "GCLK:4" } },
-    { "SPI_SCK",        1, 11, { "EIC:11",  NULL,               NULL,           "SERCOM4:3",    "TC5:1",    "TCC0:5",   "I2S:SCK1", "GCLK:5" } },
-    { "LED_RX",         1,  3, { "EIC:3",   "AIN11/Y9",         NULL,           "SERCOM5:1",    "TC6:1",    NULL,       NULL,       NULL } },
-    { "LED_TX",         0, 27, { "EIC:15",  NULL,               NULL,           NULL,           NULL,       NULL,       NULL,       "GCLK:0" } },
-    { "USB_HOST_EN",    0, 28, { "EIC:8",   NULL,               NULL,           NULL,           NULL,       NULL,       NULL,       "GCLK:0" } },
-    { "USB_DM",         0, 24, { "EIC:12",  NULL,               "SERCOM3:2",    "SERCOM5:2",    "TC5:0",    "TCC1:2",   "USB:DM",   NULL } },
-    { "USB_DP",         0, 25, { "EIC:13",  NULL,               "SERCOM3:3",    "SERCOM5:3",    "TC5:1",    "TCC1:3",   "USB:DP",   NULL } },
-    { "EDBG_TX",        1, 22, { "EIC:6",   NULL,               NULL,           "SERCOM5:2",    "TC7:0",    NULL,       NULL,       "GCLK:0" } },
-    { "EDBG_RX",        1, 23, { "EIC:7",   NULL,               NULL,           "SERCOM5:3",    "TC7:1",    NULL,       NULL,       "GCLK:1" } },
-    { "EDBG_SDA",       0, 22, { "EIC:6",   "X10",              "SERCOM3:0",    "SERCOM5:0",    "TC4:0",    "TCC0:4",   NULL,       "GCLK:6" } },
-    { "EDBG_SCL",       0, 23, { "EIC:7",   "X11",              "SERCOM3:1",    "SERCOM5:1",    "TC4:1",    "TCC0:5",   "USB:SOF",  "GCLK:7" } },
-    { "EDBG_MISO",      0, 19, { "EIC:3",   "X7",               "SERCOM1:3",    "SERCOM3:3",    "TC3:1",    "TCC0:3",   "I2S:SD0",  "AC:1" } },
-    { "EDBG_MOSI",      0, 16, { "EIC:0",   "X4",               "SERCOM1:0",    "SERCOM3:0",    "TCC2:0",   "TCC0:6",   NULL,       "GCLK:2" } },
-    { "EDBG_SS",        0, 18, { "EIC:2",   "X6",               "SERCOM1:2",    "SERCOM3:2",    "TC3:0",    "TCC0:2",   NULL,       "AC:0" } },
-    { "EDBG_SCK",       0, 17, { "EIC:1",   "X5",               "SERCOM1:1",    "SERCOM3:1",    "TCC1:1",   "TCC0:7",   NULL,       "GCLK:3" } },
-    { "EDBG_GPIO0",     0, 13, { "EIC:13",  NULL,               "SERCOM2:1",    "SERCOM4:1",    "TCC2:1",   "TCC0:7",   NULL,       "AC:7" } },
-    { "EDBG_GPIO1",     0, 21, { "EIC:5",   "X9",               "SERCOM5:3",    "SERCOM3:3",    "TC7:1",    "TCC0:7",   "I2S:FS0",  "GCLK:5" } },
-    { "EDBG_GPIO2",     0,  6, { "EIC:6",   "AIN6/AIN2/Y4",     NULL,           "SERCOM0:2",    "TCC1:0",   NULL,       NULL,       NULL } },
-    { "EDBG_GPIO3",     0,  7, { "EIC:7",   "AIN7/AIN3/Y5",     NULL,           "SERCOM0:3",    "TCC1:1",   NULL,       "I2S:SD0",  NULL } },
-    { "AREF",           0,  3, { "EIC:3",   "ADC:VREFA/DAC:VREFA/AIN1/Y1", NULL, NULL,          NULL,       NULL,       NULL,       NULL } },
+static const ZeroRegsPORT_PMUX ZeroRegsPORT_PMUXs[8] = {
+    { 'A', "EIC" },
+    { 'B', "REF,ADC,AC,PTC,DAC" },  // analog stuff
+    { 'C', "SERCOM" },
+    { 'D', "SERCOM-ALT" },
+    { 'E', "TC,TCC" },
+    { 'F', "TCC" },
+    { 'G', "COM" },
+    { 'H', "AC,GCLK" },
 };
-const uint8_t port_pin_count = 43;
-void printZeroRegPORT(ZeroRegOptions &opts) {
-    opts.out.println("--------------------------- PORT");
-    for (uint8_t p = 0; p < port_pin_count; p++) {
-        const Port_Pin &pin = port_pins[p];
-        bool dir    = bitRead(PORT->Group[pin.grp].DIR.reg, pin.idx);
-        bool inen   = PORT->Group[pin.grp].PINCFG[pin.idx].bit.INEN;
-        bool pullen = PORT->Group[pin.grp].PINCFG[pin.idx].bit.PULLEN;
-        bool pmuxen = PORT->Group[pin.grp].PINCFG[pin.idx].bit.PMUXEN;
-        bool disabled = !dir && !inen && !pullen && !pmuxen;        // [22.6.3.4] Digital Functionality Disabled
-        if (disabled && !opts.showDisabled) {
-            continue;
-        }
-        opts.out.print(pin.grp ? "PB" : "PA");      // FUTURE: fix this if/when there's a port C
-        PRINTPAD2(pin.idx);
-        opts.out.print(" ");
-        opts.out.print(pin.name);
-        opts.out.print(": ");
-        if (disabled) {
-            opts.out.print(" ");
-            opts.out.println(ZeroRegs__DISABLED);
-            continue;
-        }
-        if (pmuxen) {
-            uint8_t pmux = 0xF & PORT->Group[pin.grp].PMUX[pin.idx / 2].reg >> (4 * (pin.idx % 2));
-            opts.out.print(" pmux=");
-            if (pin.pmux[pmux]) {
-                opts.out.print(pin.pmux[pmux]);
-            } else {
-                // shouldn't get here so we'll print some debugging
-                PRINTHEX(pmux);
-            }
+struct ZeroRegsPORT_Pin {
+    const char* name;
+    const char* pmux[8];    // see PMUX names above
+};
+static const ZeroRegsPORT_Pin ZeroRegsPORT_pins[2][32] = {
+    {
+        { "PA00", {   "EIC:0",                           NULL,        NULL, "SERCOM1:0", "TCC2:0",     NULL,        NULL,     NULL } },
+        { "PA01", {   "EIC:1",                           NULL,        NULL, "SERCOM1:1", "TCC2:1",     NULL,        NULL,     NULL } },
+        { "PA02", {   "EIC:2",            "ADC:0,Y0,DAC:VOUT",        NULL,        NULL,     NULL, "TCC3:0",        NULL,     NULL } },
+        { "PA03", {   "EIC:3", "ADC:VREFA,DAC:VREFA,ADC:1,Y1",        NULL,        NULL,     NULL, "TCC3:1",        NULL,     NULL } },
+        { "PA04", {   "EIC:4",      "ADC:VREFB,ADC:4,AC:0,Y2",        NULL, "SERCOM0:0", "TCC0:0", "TCC3:2",        NULL,     NULL } },
+        { "PA05", {   "EIC:5",                "ADC:5,AC:1,Y3",        NULL, "SERCOM0:1", "TCC0:1", "TCC3:3",        NULL,     NULL } },
+        { "PA06", {   "EIC:6",                "ADC:6,AC:2,Y4",        NULL, "SERCOM0:2", "TCC1:0", "TCC3:4",        NULL,     NULL } },
+        { "PA07", {   "EIC:7",                "ADC:7,AC:3,Y5",        NULL, "SERCOM0:3", "TCC1:1", "TCC3:5",   "I2S:SD0",     NULL } },
+        { "PA08", { "EIC:NMI",                    "ADC:16,X0", "SERCOM0:0", "SERCOM2:0", "TCC0:0", "TCC1:2",   "I2S:SD1",     NULL } },
+        { "PA09", {   "EIC:9",                    "ADC:17,X1", "SERCOM0:1", "SERCOM2:1", "TCC0:1", "TCC1:3",  "I2S:MCK0",     NULL } },
+        { "PA10", {  "EIC:10",                    "ADC:18,X2", "SERCOM0:2", "SERCOM2:2", "TCC1:0", "TCC0:2",  "I2S:SCK0", "GCLK:4" } },
+        { "PA11", {  "EIC:11",                    "ADC:19,X3", "SERCOM0:3", "SERCOM2:3", "TCC1:1", "TCC0:3",   "I2S:FS0", "GCLK:5" } },
+        { "PA12", {  "EIC:12",                           NULL, "SERCOM2:0", "SERCOM4:0", "TCC2:0", "TCC0:6",        NULL,   "AC:0" } },
+        { "PA13", {  "EIC:13",                           NULL, "SERCOM2:1", "SERCOM4:1", "TCC2:1", "TCC0:7",        NULL,   "AC:1" } },
+        { "PA14", {  "EIC:14",                           NULL, "SERCOM2:2", "SERCOM4:2",  "TC3:0", "TCC0:4",        NULL, "GCLK:0" } },
+        { "PA15", {  "EIC:15",                           NULL, "SERCOM2:3", "SERCOM4:3",  "TC3:1", "TCC0:5",        NULL, "GCLK:1" } },
+        { "PA16", {   "EIC:0",                           "X4", "SERCOM1:0", "SERCOM3:0", "TCC2:0", "TCC0:6",        NULL, "GCLK:2" } },
+        { "PA17", {   "EIC:1",                           "X5", "SERCOM1:1", "SERCOM3:1", "TCC2:1", "TCC0:7",        NULL, "GCLK:3" } },
+        { "PA18", {   "EIC:2",                           "X6", "SERCOM1:2", "SERCOM3:2",  "TC3:0", "TCC0:2",        NULL,   "AC:0" } },
+        { "PA19", {   "EIC:3",                           "X7", "SERCOM1:3", "SERCOM3:3",  "TC3:1", "TCC0:3",   "I2S:SD0",   "AC:1" } },
+        { "PA20", {   "EIC:4",                           "X8", "SERCOM5:2", "SERCOM3:2",  "TC7:0", "TCC0:6",  "I2S:SCK0", "GCLK:4" } },
+        { "PA21", {   "EIC:5",                           "X9", "SERCOM5:3", "SERCOM3:3",  "TC7:1", "TCC0:7",   "I2S:FS0", "GCLK:5" } },
+        { "PA22", {   "EIC:6",                          "X10", "SERCOM3:0", "SERCOM5:0",  "TC4:0", "TCC0:4",        NULL, "GCLK:6" } },
+        { "PA23", {   "EIC:7",                          "X11", "SERCOM3:1", "SERCOM5:1",  "TC4:1", "TCC0:5", "USB:SOF1K", "GCLK:7" } },
+        { "PA24", {  "EIC:12",                           NULL, "SERCOM3:2", "SERCOM5:2",  "TC5:0", "TCC1:2",    "USB:DN",     NULL } },
+        { "PA25", {  "EIC:13",                           NULL, "SERCOM3:3", "SERCOM5:3",  "TC5:1", "TCC1:3",    "USB:DP",     NULL } },
+        {/*PA26*/NULL,{  NULL,                           NULL,        NULL,        NULL,     NULL,     NULL,        NULL,     NULL } },
+        { "PA27", {  "EIC:15",                           NULL,        NULL,        NULL,     NULL, "TCC3:6",        NULL, "GCLK:0" } },
+        { "PA28", {   "EIC:8",                           NULL,        NULL,        NULL,     NULL, "TCC3:7",        NULL, "GCLK:0" } },
+        {/*PA29*/NULL,{  NULL,                           NULL,        NULL,        NULL,     NULL,     NULL,        NULL,     NULL } },
+        { "PA30", {  "EIC:10",                           NULL,        NULL, "SERCOM1:2", "TCC1:0", "TCC3:4",     "SWCLK", "GCLK:0" } },
+        { "PA31", {  "EIC:11",                           NULL,        NULL, "SERCOM1:3", "TCC1:1", "TCC3:5",     "SWDIO",     NULL } },
+    },
+    {
+        { "PB00", {   "EIC:0",   "ADC:8,Y6",        NULL, "SERCOM5:2",  "TC7:0",     NULL,       NULL,     NULL } },
+        { "PB01", {   "EIC:1",   "ADC:9,Y7",        NULL, "SERCOM5:3",  "TC7:1",     NULL,       NULL,     NULL } },
+        { "PB02", {   "EIC:2",  "ADC:10,Y8",        NULL, "SERCOM5:0",  "TC6:0", "TCC3:2",       NULL,     NULL } },
+        { "PB03", {   "EIC:3",  "ADC:11,Y9",        NULL, "SERCOM5:1",  "TC6:1", "TCC3:3",       NULL,     NULL } },
+        { "PB04", {   "EIC:4", "ADC:12,Y10",        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        { "PB05", {   "EIC:5", "ADC:13,Y11",        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        { "PB06", {   "EIC:6", "ADC:14,Y12",        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        { "PB07", {   "EIC:7", "ADC:15,Y13",        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        { "PB08", {   "EIC:8",  "ADC:2,Y14",        NULL, "SERCOM4:0",  "TC4:0", "TCC3:6",       NULL,     NULL } },
+        { "PB09", {   "EIC:9",  "ADC:3,Y15",        NULL, "SERCOM4:1",  "TC4:1", "TCC3:7",       NULL,     NULL } },
+        { "PB10", {  "EIC:10",         NULL,        NULL, "SERCOM4:2",  "TC5:0", "TCC0:4", "I2S:MCK1", "GCLK:4" } },
+        { "PB11", {  "EIC:11",         NULL,        NULL, "SERCOM4:3",  "TC5:1", "TCC0:5", "I2S:SCK1", "GCLK:5" } },
+        { "PB12", {  "EIC:12",        "X12", "SERCOM4:0",        NULL,  "TC4:0", "TCC0:6",  "I2S:FS1", "GCLK:6" } },
+        { "PB13", {  "EIC:13",        "X13", "SERCOM4:1",        NULL,  "TC4:1", "TCC0:7",       NULL, "GCLK:7" } },
+        { "PB14", {  "EIC:14",        "X14", "SERCOM4:2",        NULL,  "TC5:0",     NULL,       NULL, "GCLK:0" } },
+        { "PB15", {  "EIC:15",        "X15", "SERCOM4:3",        NULL,  "TC5:1",     NULL,       NULL, "GCLK:1" } },
+        { "PB16", {   "EIC:0",         NULL, "SERCOM5:0",        NULL,  "TC6:0", "TCC0:4",  "I2S:SD1", "GCLK:2" } },
+        { "PB17", {   "EIC:1",         NULL, "SERCOM5:1",        NULL,  "TC6:1", "TCC0:5", "I2S:MCK0", "GCLK:3" } },
+        {/*PB18*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB19*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB20*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB21*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        { "PB22", {   "EIC:6",         NULL,        NULL, "SERCOM5:2",  "TC7:0", "TCC3:0",       NULL, "GCLK:0" } },
+        { "PB23", {   "EIC:7",         NULL,        NULL, "SERCOM5:3",  "TC7:1", "TCC3:1",       NULL, "GCLK:1" } },
+        {/*PB24*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB25*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB26*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB27*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB28*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        {/*PB29*/NULL,{  NULL,         NULL,        NULL,        NULL,     NULL,     NULL,       NULL,     NULL } },
+        { "PB30", {  "EIC:14",         NULL,        NULL, "SERCOM5:0", "TCC0:0", "TCC1:2",       NULL,     NULL } },
+        { "PB31", {  "EIC:15",         NULL,        NULL, "SERCOM5:1", "TCC0:1", "TCC1:3",       NULL,     NULL } },
+    },
+};
+void printZeroRegPORT_pin(ZeroRegOptions &opts, uint8_t gid, uint8_t pid) {
+    uint32_t dir = (PORT->Group[gid].DIR.bit.DIR & (1 << pid));
+    uint8_t inen = PORT->Group[gid].PINCFG[pid].bit.INEN;
+    uint8_t pullen = PORT->Group[gid].PINCFG[pid].bit.PULLEN;
+    uint8_t pmuxen = PORT->Group[gid].PINCFG[pid].bit.PMUXEN;
+    if (pmuxen) {
+        uint8_t pmux;
+        if ((pid%2) == 0) {
+            pmux = PORT->Group[gid].PMUX[pid/2].bit.PMUXE;
         } else {
-            opts.out.print(" dir=");
-            opts.out.print(dir ? "OUT" : "IN");
-            PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], INEN);
-            if (!dir && pullen) {
-                opts.out.print(bitRead(PORT->Group[pin.grp].OUT.reg, pin.idx) ? " PULLUP" : " PULLDOWN");
-            }
-            PRINTFLAG(PORT->Group[pin.grp].PINCFG[pin.idx], DRVSTR);
+            pmux = PORT->Group[gid].PMUX[pid/2].bit.PMUXO;
         }
+        opts.out.print("pmux=");
+        const char *pmuxName = ZeroRegsPORT_pins[gid][pid].pmux[pmux];
+        if (!pmuxName) {
+            pmuxName = ZeroRegsPORT_PMUXs[pmux].name;
+        }
+        opts.out.print(pmuxName);
+        if (!dir && !inen && !pullen) {
+            // [23.6.3.4 DSrevF] Digital Functionality Disabled
+            return;
+        }
+        opts.out.print(" ");
+    }
+    if (dir) {
+        opts.out.print("output");
+        if (inen) {
+            opts.out.print(" INEN");
+        }
+        PRINTFLAG(PORT->Group[gid].PINCFG[pid], DRVSTR);
+    } else {
+        opts.out.print("input");
+        if (inen) {
+            opts.out.print(" INEN");
+        }
+        if (PORT->Group[gid].CTRL.bit.SAMPLING & (1<<pid)) {
+            opts.out.print(" SAMPLING");
+        }
+        if (pullen) {
+            opts.out.print(" pull=");
+            opts.out.print(
+                    PORT->Group[gid].OUT.bit.OUT & (1<<pid) ?
+                    "UP" : "DOWN"
+                    );
+        }
+    }
+}
+void printZeroRegPORT(ZeroRegOptions &opts) {
+    for (uint8_t gid = 0; gid < 2; gid++) {
+        opts.out.print("--------------------------- PORT ");
+        opts.out.print(char('A' + gid));
         PRINTNL();
+
+        for (uint8_t pid = 0; pid < 32; pid++) {
+            if (!ZeroRegsPORT_pins[gid][pid].name) {
+                // pin not defined in datasheet [table 7-1 DSrevF]
+                continue;
+            }
+            uint32_t dir = (PORT->Group[gid].DIR.bit.DIR & (1 << pid));
+            uint8_t inen = PORT->Group[gid].PINCFG[pid].bit.INEN;
+            uint8_t pullen = PORT->Group[gid].PINCFG[pid].bit.PULLEN;
+            uint8_t pmuxen = PORT->Group[gid].PINCFG[pid].bit.PMUXEN;
+            bool disabled = !dir && !inen && !pullen && !pmuxen;    // [23.6.3.4 DSrevF] Digital Functionality Disabled
+            if (disabled && !opts.showDisabled) {
+                continue;
+            }
+            opts.out.print(ZeroRegsPORT_pins[gid][pid].name);
+            opts.out.print(":  ");
+            printZeroRegPORT_pin(opts, gid, pid);
+            PRINTNL();
+        }
+    }
+}
+
+
+void printZeroRegPORT_Arduino(ZeroRegOptions &opts) {
+    opts.out.println("--------------------------- ARDUINO PINS");
+    uint8_t aid = 0;
+    for (uint8_t did = 0; did < PINS_COUNT; did++) {
+        PinDescription pinDesc = g_APinDescription[did];
+        uint8_t gid = pinDesc.ulPort;
+        uint8_t pid = pinDesc.ulPin;
+        if (gid == NOT_A_PORT || pinDesc.ulPinType == PIO_NOT_A_PIN) {
+            continue;
+        }
+        if (pinDesc.ulPinType == PIO_ANALOG) {
+            opts.out.print('A');
+            opts.out.print(aid);
+            aid++;
+        } else if (pinDesc.ulPinAttribute & PIN_ATTR_DIGITAL) {
+            opts.out.print('D');
+            opts.out.print(did);
+        } else {
+            opts.out.print(ZeroRegsPORT_pins[gid][pid].name);
+        }
+        opts.out.print(":  ");
+        uint32_t dir = (PORT->Group[gid].DIR.bit.DIR & (1 << pid));
+        uint8_t inen = PORT->Group[gid].PINCFG[pid].bit.INEN;
+        uint8_t pullen = PORT->Group[gid].PINCFG[pid].bit.PULLEN;
+        uint8_t pmuxen = PORT->Group[gid].PINCFG[pid].bit.PMUXEN;
+        bool disabled = !dir && !inen && !pullen && !pmuxen;    // [23.6.3.4 DSrevF] Digital Functionality Disabled
+        if (disabled && !opts.showDisabled) {
+            opts.out.println(ZeroRegs__DISABLED);
+        } else {
+            printZeroRegPORT_pin(opts, gid, pid);
+            PRINTNL();
+        }
     }
 }
 
@@ -1489,6 +1583,7 @@ void printZeroRegs(ZeroRegOptions &opts) {
 #endif
     printZeroRegNVMCTRL(opts);
     printZeroRegPORT(opts);
+    printZeroRegPORT_Arduino(opts);
     printZeroRegRTC(opts);
     printZeroRegSERCOM(opts, SERCOM0, 0);
     printZeroRegSERCOM(opts, SERCOM1, 1);

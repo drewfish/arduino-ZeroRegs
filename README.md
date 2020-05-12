@@ -211,6 +211,40 @@ PA06 EDBG_GPIO2:  dir=IN INEN
 PA07 EDBG_GPIO3:  pmux=EIC:7
 ```
 
+### void printZeroRegPORT_Arduino(ZeroRegOptions &opts)
+Prints out the `PORT` configuration for the Arduino pins.
+
+example output:
+```text
+--------------------------- ARDUINO PINS
+D0:  --disabled--
+D1:  --disabled--
+D2:  --disabled--
+D3:  --disabled--
+D4:  --disabled--
+D5:  --disabled--
+D6:  --disabled--
+D7:  --disabled--
+D8:  --disabled--
+D9:  --disabled--
+D10:  --disabled--
+D11:  --disabled--
+D12:  pmux=EIC:3 input INEN pull=UP
+D13:  output INEN
+A0:  --disabled--
+A1:  --disabled--
+A2:  --disabled--
+A3:  --disabled--
+A4:  --disabled--
+A5:  --disabled--
+D20:  pmux=SERCOM3:0
+D21:  pmux=SERCOM3:1
+D22:  --disabled--
+D23:  --disabled--
+D24:  --disabled--
+D25:  output INEN
+```
+
 
 ### void printZeroRegRTC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `RTC` peripheral.

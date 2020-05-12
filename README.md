@@ -247,6 +247,21 @@ MASK0:  OFF
 ```
 
 
+### void printZeroRegSCS(ZeroRegOptions &opts)
+Prints out the ARM Cortex-M0+ system control space.
+
+example output:
+```text
+--------------------------- SCS
+CPUID:  REV=0x1 PARTNO=0xC60 ARCH=0xC VAR=0x0 IMPL=0x41
+SysTick:  ENABLE TICKINT CLKSOURCE=CPU RELOAD=47999 TENMS=79999 SKEW
+irq pri0:  PM SYSCTRL WDT RTC EIC NVMCTRL DMAC USB EVSYS SERCOM1 SERCOM2 SERCOM5 TCC0 TCC1 TCC2 TC3 TC4 TC5 TC6 TC7 ADC AC DAC PTC I2S
+irq pri1:
+irq pri2:
+irq pri3:  SERCOM0 SERCOM3 SERCOM4
+```
+
+
 ### void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx)
 Prints out the configuration registers for a `SERCOM` peripheral.
 

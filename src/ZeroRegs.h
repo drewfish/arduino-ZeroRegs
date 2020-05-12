@@ -53,6 +53,7 @@ void printZeroRegPM(ZeroRegOptions &opts);
 void printZeroRegPORT(ZeroRegOptions &opts);
 void printZeroRegPORT_Arduino(ZeroRegOptions &opts);
 void printZeroRegRTC(ZeroRegOptions &opts);
+void printZeroRegSCS(ZeroRegOptions &opts);
 void printZeroRegSERCOM(ZeroRegOptions &opts, Sercom* sercom, uint8_t idx);
 void printZeroRegSYSCTRL(ZeroRegOptions &opts);
 void printZeroRegTC(ZeroRegOptions &opts, Tc* tc, uint8_t idx);

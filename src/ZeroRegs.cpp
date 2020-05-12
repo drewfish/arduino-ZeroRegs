@@ -46,6 +46,7 @@ static const char* ZeroRegs__empty = "";
 #define READ2FUSES(x,y,o) ( ((*((uint32_t *) x##_FUSES_##y##_0_ADDR) & x##_FUSES_##y##_0_Msk) >> x##_FUSES_##y##_0_Pos) | (((*((uint32_t *) x##_FUSES_##y##_1_ADDR) & x##_FUSES_##y##_1_Msk) >> x##_FUSES_##y##_1_Pos) << o))
 #define READADDR32(x) (*((uint32_t*)(x)))
 #define READFUSE(x,y) ((*((uint32_t *) x##_FUSES_##y##_ADDR) & x##_FUSES_##y##_Msk) >> x##_FUSES_##y##_Pos)
+#define READSCS(val,name) ( (val & (name##_Msk)) >> (name##_Pos) )
 #define WRITE8(x,y) *((uint8_t*)&(x)) = uint8_t(y)
 
 
@@ -1073,6 +1074,85 @@ void printZeroRegRTC(ZeroRegOptions &opts) {
 }
 
 
+void printZeroRegSCS(ZeroRegOptions &opts) {
+    opts.out.println("--------------------------- SCS");
+
+    opts.out.print("CPUID:  REV=");
+    PRINTHEX(READSCS(SCB->CPUID, SCB_CPUID_REVISION));
+    opts.out.print(" PARTNO=");
+    PRINTHEX(READSCS(SCB->CPUID, SCB_CPUID_PARTNO));
+    opts.out.print(" ARCH=");
+    PRINTHEX(READSCS(SCB->CPUID, SCB_CPUID_ARCHITECTURE));
+    opts.out.print(" VAR=");
+    PRINTHEX(READSCS(SCB->CPUID, SCB_CPUID_VARIANT));
+    opts.out.print(" IMPL=");
+    PRINTHEX(READSCS(SCB->CPUID, SCB_CPUID_IMPLEMENTER));
+    PRINTNL();
+
+    opts.out.print("SysTick: ");
+    if (READSCS(SysTick->CTRL, SysTick_CTRL_ENABLE)) {
+        opts.out.print(" ENABLE");
+    }
+    if (READSCS(SysTick->CTRL, SysTick_CTRL_TICKINT)) {
+        opts.out.print(" TICKINT");
+    }
+    opts.out.print(" CLKSOURCE=");
+    opts.out.print(READSCS(SysTick->CTRL, SysTick_CTRL_CLKSOURCE) ? "CPU" : "EXT");
+    opts.out.print(" RELOAD=");
+    opts.out.print(READSCS(SysTick->LOAD, SysTick_LOAD_RELOAD));
+    opts.out.print(" TENMS=");
+    opts.out.print(READSCS(SysTick->CALIB, SysTick_CALIB_TENMS));
+    if (READSCS(SysTick->CALIB, SysTick_CALIB_SKEW)) {
+        opts.out.print(" SKEW");
+    }
+    if (READSCS(SysTick->CALIB, SysTick_CALIB_NOREF)) {
+        opts.out.print(" NOREF");
+    }
+    PRINTNL();
+    for (uint8_t pri = 0; pri < 4; pri++) {
+        opts.out.print("irq pri");
+        opts.out.print(pri);
+        opts.out.print(": ");
+        for (uint8_t irq = 0; irq < PERIPH_COUNT_IRQn; irq++) {
+            if (pri == NVIC_GetPriority((IRQn_Type) irq)) {
+                switch (irq) {
+                    case 0: opts.out.print(" PM"); break;
+                    case 1: opts.out.print(" SYSCTRL"); break;
+                    case 2: opts.out.print(" WDT"); break;
+                    case 3: opts.out.print(" RTC"); break;
+                    case 4: opts.out.print(" EIC"); break;
+                    case 5: opts.out.print(" NVMCTRL"); break;
+                    case 6: opts.out.print(" DMAC"); break;
+                    case 7: opts.out.print(" USB"); break;
+                    case 8: opts.out.print(" EVSYS"); break;
+                    case 9: opts.out.print(" SERCOM0"); break;
+                    case 10: opts.out.print(" SERCOM1"); break;
+                    case 11: opts.out.print(" SERCOM2"); break;
+                    case 12: opts.out.print(" SERCOM3"); break;
+                    case 13: opts.out.print(" SERCOM4"); break;
+                    case 14: opts.out.print(" SERCOM5"); break;
+                    case 15: opts.out.print(" TCC0"); break;
+                    case 16: opts.out.print(" TCC1"); break;
+                    case 17: opts.out.print(" TCC2"); break;
+                    case 18: opts.out.print(" TC3"); break;
+                    case 19: opts.out.print(" TC4"); break;
+                    case 20: opts.out.print(" TC5"); break;
+                    case 21: opts.out.print(" TC6"); break;
+                    case 22: opts.out.print(" TC7"); break;
+                    case 23: opts.out.print(" ADC"); break;
+                    case 24: opts.out.print(" AC"); break;
+                    case 25: opts.out.print(" DAC"); break;
+                    case 26: opts.out.print(" PTC"); break;
+                    case 27: opts.out.print(" I2S"); break;
+                    default: PRINTHEX(irq); break;
+                }
+            }
+        }
+        PRINTNL();
+    }
+}
+
+
 void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
     opts.out.print("CTRLA: ");
     PRINTFLAG(i2cm.CTRLA, ENABLE);
@@ -1615,7 +1695,8 @@ void printZeroRegWDT(ZeroRegOptions &opts) {
 
 
 void printZeroRegs(ZeroRegOptions &opts) {
-    // show clocking system
+    // show system basics
+    printZeroRegSCS(opts);
     printZeroRegSYSCTRL(opts);
     printZeroRegGCLK(opts);
 

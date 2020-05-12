@@ -391,8 +391,9 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
         }
         opts.out.print("GEN");
         PRINTPAD2(genid);
-        opts.out.print(":  ");
+        opts.out.print(": ");
         PRINTFLAG(GCLK->GENCTRL, GENEN);
+        opts.out.print(" ");
         switch (GCLK->GENCTRL.bit.SRC) {
             case 0x0: opts.out.print("XOSC"); break;
             case 0x1:
@@ -422,9 +423,13 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
             }
         }
         PRINTFLAG(GCLK->GENCTRL, IDC);
-        opts.out.print(" OOV=");
-        opts.out.print(GCLK->GENCTRL.bit.OOV);
-        PRINTFLAG(GCLK->GENCTRL, OE);   //FUTURE -- lookup port pin(s)
+        if (GCLK->GENCTRL.bit.SRC != 1) {
+            PRINTFLAG(GCLK->GENCTRL, OE);   //FUTURE -- lookup port pin(s)
+            if (GCLK->GENCTRL.bit.OE) {
+                opts.out.print(" OOV=");
+                opts.out.print(GCLK->GENCTRL.bit.OOV);
+            }
+        }
         PRINTFLAG(GCLK->GENCTRL, RUNSTDBY);
         PRINTNL();
     }

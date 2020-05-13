@@ -80,7 +80,7 @@ Function Reference
 Prints out configuration registers, as many as this library knows how.
 
 
-### void printZeroRegAC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
+### void printZeroRegAC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `AC` peripheral.
 
 

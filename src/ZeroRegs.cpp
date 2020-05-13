@@ -51,7 +51,94 @@ static const char* ZeroRegs__empty = "";
 
 
 void printZeroRegAC(ZeroRegOptions &opts) {
-    // FUTURE
+    while (AC->CTRLA.bit.SWRST || AC->STATUSB.bit.SYNCBUSY) {}
+    if (!AC->CTRLA.bit.ENABLE && !opts.showDisabled) {
+        return;
+    }
+    opts.out.println("--------------------------- AC");
+
+    opts.out.print("CTRLA: ");
+    PRINTFLAG(AC->CTRLA, ENABLE);
+    PRINTFLAG(AC->CTRLA, RUNSTDBY);
+    PRINTFLAG(AC->CTRLA, LPMUX);
+    PRINTNL();
+
+    opts.out.print("EVCTRL: ");
+    PRINTFLAG(AC->EVCTRL, COMPEO0);
+    PRINTFLAG(AC->EVCTRL, COMPEO1);
+    PRINTFLAG(AC->EVCTRL, WINEO0);
+    PRINTFLAG(AC->EVCTRL, COMPEI0);
+    PRINTFLAG(AC->EVCTRL, COMPEI1);
+    PRINTNL();
+
+    opts.out.print("WINCTRL: ");
+    PRINTFLAG(AC->WINCTRL, WEN0);
+    opts.out.print(" WINTSEL0=");
+    PRINTHEX(AC->WINCTRL.bit.WINTSEL0);
+    PRINTNL();
+
+    for (uint8_t id = 0; id < 2; id++) {
+        opts.out.print("COMPCTRL");
+        opts.out.print(id);
+        opts.out.print(": ");
+        PRINTFLAG(AC->COMPCTRL[id], ENABLE);
+        PRINTFLAG(AC->COMPCTRL[id], SINGLE);
+        opts.out.print(" speed=");
+        switch (AC->COMPCTRL[id].bit.SPEED) {
+            case 0x0: opts.out.print("LOW"); break;
+            case 0x1: opts.out.print("HIGHT"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        opts.out.print(" intsel=");
+        switch (AC->COMPCTRL[id].bit.INTSEL) {
+            case 0x0: opts.out.print("TOGGLE"); break;
+            case 0x1: opts.out.print("RISING"); break;
+            case 0x2: opts.out.print("FALLING"); break;
+            case 0x3: opts.out.print("EOC"); break;
+        }
+        opts.out.print(" muxneg=");
+        switch (AC->COMPCTRL[id].bit.MUXNEG) {
+            case 0x0: opts.out.print("PIN0"); break;
+            case 0x1: opts.out.print("PIN1"); break;
+            case 0x2: opts.out.print("PIN2"); break;
+            case 0x3: opts.out.print("PIN3"); break;
+            case 0x4: opts.out.print("GND"); break;
+            case 0x5: opts.out.print("VSCALE"); break;
+            case 0x6: opts.out.print("BANDGAP"); break;
+            case 0x7: opts.out.print("DAC"); break;
+        }
+        opts.out.print(" muxpos=");
+        switch (AC->COMPCTRL[id].bit.MUXPOS) {
+            case 0x0: opts.out.print("PIN0"); break;
+            case 0x1: opts.out.print("PIN1"); break;
+            case 0x2: opts.out.print("PIN2"); break;
+            case 0x3: opts.out.print("PIN3"); break;
+        }
+        PRINTFLAG(AC->COMPCTRL[id], SWAP);
+        opts.out.print(" out=");
+        switch (AC->COMPCTRL[id].bit.OUT) {
+            case 0x0: opts.out.print("OFF"); break;
+            case 0x1: opts.out.print("ASYNC"); break;
+            case 0x2: opts.out.print("SYNC"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        PRINTFLAG(AC->COMPCTRL[id], HYST);
+        opts.out.print(" flen=");
+        switch (AC->COMPCTRL[id].bit.FLEN) {
+            case 0x0: opts.out.print("OFF"); break;
+            case 0x1: opts.out.print("MAJ3"); break;
+            case 0x2: opts.out.print("MAJ5"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        PRINTNL();
+    }
+
+    opts.out.print("SCALER0:  ");
+    opts.out.print(AC->SCALER[0].bit.VALUE);
+    PRINTNL();
+    opts.out.print("SCALER1:  ");
+    opts.out.print(AC->SCALER[1].bit.VALUE);
+    PRINTNL();
 }
 
 
@@ -1101,7 +1188,7 @@ void printZeroRegSCS(ZeroRegOptions &opts) {
     if (READSCS(SysTick->CTRL, SysTick_CTRL_TICKINT)) {
         opts.out.print(" TICKINT");
     }
-    opts.out.print(" CLKSOURCE=");
+    opts.out.print(" clksource=");
     opts.out.print(READSCS(SysTick->CTRL, SysTick_CTRL_CLKSOURCE) ? "CPU" : "EXT");
     opts.out.print(" RELOAD=");
     opts.out.print(READSCS(SysTick->LOAD, SysTick_LOAD_RELOAD));

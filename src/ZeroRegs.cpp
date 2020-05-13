@@ -50,6 +50,16 @@ static const char* ZeroRegs__empty = "";
 #define WRITE8(x,y) *((uint8_t*)&(x)) = uint8_t(y)
 
 
+void printZeroReg_QOS(ZeroRegOptions &opts, uint8_t qos) {
+    switch (qos) {
+        case 0x0: opts.out.print("DISABLE"); break;
+        case 0x1: opts.out.print("LOW"); break;
+        case 0x2: opts.out.print("MEDIUM"); break;
+        case 0x3: opts.out.print("HIGH"); break;
+    }
+}
+
+
 void printZeroRegAC(ZeroRegOptions &opts) {
     while (AC->CTRLA.bit.SWRST || AC->STATUSB.bit.SYNCBUSY) {}
     if (!AC->CTRLA.bit.ENABLE && !opts.showDisabled) {
@@ -306,8 +316,156 @@ void printZeroRegDAC(ZeroRegOptions &opts) {
 }
 
 
+typedef union {
+    struct {
+        uint8_t PRI:4;
+        uint8_t :3;
+        uint8_t RREN:1;
+    } bit;
+    uint8_t reg;
+} ZeroRegsDMAC_PRILVL;
 void printZeroRegDMAC(ZeroRegOptions &opts) {
-    // FUTURE
+    while (DMAC->CTRL.bit.SWRST) {}
+    if (!DMAC->CTRL.bit.DMAENABLE && !opts.showDisabled) {
+        return;
+    }
+    opts.out.println("--------------------------- DMAC");
+
+    opts.out.print("CTRL: ");
+    PRINTFLAG(DMAC->CTRL, DMAENABLE);
+    PRINTFLAG(DMAC->CTRL, CRCENABLE);
+    PRINTFLAG(DMAC->CTRL, LVLEN0);
+    PRINTFLAG(DMAC->CTRL, LVLEN1);
+    PRINTFLAG(DMAC->CTRL, LVLEN2);
+    PRINTFLAG(DMAC->CTRL, LVLEN3);
+    PRINTNL();
+
+    opts.out.print("CRCCTRL:  CRCBEATSIZE=");
+    PRINTHEX(DMAC->CRCCTRL.bit.CRCBEATSIZE);
+    opts.out.print(" CRCPOLY=");
+    PRINTHEX(DMAC->CRCCTRL.bit.CRCPOLY);
+    opts.out.print(" CRCSRC=");
+    PRINTHEX(DMAC->CRCCTRL.bit.CRCSRC);
+    PRINTNL();
+
+    opts.out.print("QOSCTRL:  wrbqos=");
+    printZeroReg_QOS(opts, DMAC->QOSCTRL.bit.WRBQOS);
+    opts.out.print(" fqos=");
+    printZeroReg_QOS(opts, DMAC->QOSCTRL.bit.FQOS);
+    opts.out.print(" dqos=");
+    printZeroReg_QOS(opts, DMAC->QOSCTRL.bit.DQOS);
+    PRINTNL();
+
+    opts.out.print("PRICTRL0: ");
+    for (uint8_t lvl = 0; lvl < 4; lvl++) {
+        ZeroRegsDMAC_PRILVL pri;
+        pri.reg = (DMAC->PRICTRL0.reg >> (8 * lvl)) & 0xFF;
+        opts.out.print(" lvl");
+        opts.out.print(lvl);
+        opts.out.print(":");
+        if (pri.bit.RREN) {
+            opts.out.print("rren");
+        }
+    }
+    PRINTNL();
+
+    //FUTURE -- find macro for number of channels
+    // (though all configurations in [table 2-1 DSrevF] have 12)
+    for (uint8_t id = 0; id < 12; id++) {
+        DMAC->CHID.bit.ID = id;
+        //FUTURE -- DSrevF suggests that no delay is necessary
+        delay(1);
+        while (DMAC->CHCTRLA.bit.SWRST) {}
+        if (!DMAC->CHCTRLA.bit.ENABLE && !opts.showDisabled) {
+            continue;
+        }
+        opts.out.print("CHANNEL");
+        PRINTPAD2(id);
+        opts.out.print(": ");
+        PRINTFLAG(DMAC->CHCTRLA, ENABLE);
+        if (DMAC->CHCTRLB.bit.EVIE) {
+            opts.out.print(" EVIE evact=");
+            switch (DMAC->CHCTRLB.bit.EVACT) {
+                case 0x0: opts.out.print("NOACT"); break;
+                case 0x1: opts.out.print("TRIG"); break;
+                case 0x2: opts.out.print("CTRIG"); break;
+                case 0x3: opts.out.print("CBLOCK"); break;
+                case 0x4: opts.out.print("SUSPEND"); break;
+                case 0x5: opts.out.print("RESUME"); break;
+                case 0x6: opts.out.print("SSKIP"); break;
+                default: opts.out.print(ZeroRegs__RESERVED); break;
+            }
+        }
+
+        PRINTFLAG(DMAC->CHCTRLB, EVOE);
+        opts.out.print(" lvl=LVL");
+        opts.out.print(DMAC->CHCTRLB.bit.LVL);
+        opts.out.print(" trigsrc=");
+        switch (DMAC->CHCTRLB.bit.TRIGSRC) {
+            case 0x00: opts.out.print("DISABLE"); break;
+            case 0x01: opts.out.print("SERCOM0:RX"); break;
+            case 0x02: opts.out.print("SERCOM0:TX"); break;
+            case 0x03: opts.out.print("SERCOM1:RX"); break;
+            case 0x04: opts.out.print("SERCOM1:TX"); break;
+            case 0x05: opts.out.print("SERCOM2:RX"); break;
+            case 0x06: opts.out.print("SERCOM2:TX"); break;
+            case 0x07: opts.out.print("SERCOM3:RX"); break;
+            case 0x08: opts.out.print("SERCOM3:TX"); break;
+            case 0x09: opts.out.print("SERCOM4:RX"); break;
+            case 0x0A: opts.out.print("SERCOM4:TX"); break;
+            case 0x0B: opts.out.print("SERCOM5:RX"); break;
+            case 0x0C: opts.out.print("SERCOM5:TX"); break;
+            case 0x0D: opts.out.print("TCC0:OVF"); break;
+            case 0x0E: opts.out.print("TCC0:MC0"); break;
+            case 0x0F: opts.out.print("TCC0:MC1"); break;
+            case 0x10: opts.out.print("TCC0:MC2"); break;
+            case 0x11: opts.out.print("TCC0:MC3"); break;
+            case 0x12: opts.out.print("TCC1:OVF"); break;
+            case 0x13: opts.out.print("TCC1:MC0"); break;
+            case 0x14: opts.out.print("TCC1:MC0"); break;
+            case 0x15: opts.out.print("TCC2:OVF"); break;
+            case 0x16: opts.out.print("TCC2:MC0"); break;
+            case 0x17: opts.out.print("TCC2:MC1"); break;
+            case 0x18: opts.out.print("TC3:OVF"); break;
+            case 0x19: opts.out.print("TC3:MC0"); break;
+            case 0x1A: opts.out.print("TC3:MC1"); break;
+            case 0x1B: opts.out.print("TC4:OVF"); break;
+            case 0x1C: opts.out.print("TC4:MC0"); break;
+            case 0x1D: opts.out.print("TC4:MC1"); break;
+            case 0x1E: opts.out.print("TC5:OVF"); break;
+            case 0x1F: opts.out.print("TC5:MC0"); break;
+            case 0x20: opts.out.print("TC5:MC1"); break;
+            case 0x21: opts.out.print("TC6:OVF"); break;
+            case 0x22: opts.out.print("TC6:MC0"); break;
+            case 0x23: opts.out.print("TC6:MC1"); break;
+            case 0x24: opts.out.print("TC7:OVF"); break;
+            case 0x25: opts.out.print("TC7:MC0"); break;
+            case 0x26: opts.out.print("TC7:MC1"); break;
+            case 0x27: opts.out.print("ADC:RESRDY"); break;
+            case 0x28: opts.out.print("DAC:EMPTY"); break;
+            case 0x29: opts.out.print("I2S:RX0"); break;
+            case 0x2A: opts.out.print("I2S:RX1"); break;
+            case 0x2B: opts.out.print("I2S:TX0"); break;
+            case 0x2C: opts.out.print("I2S:TX1"); break;
+            case 0x2D: opts.out.print("TCC3:OVF"); break;
+            case 0x2E: opts.out.print("TCC3:MC0"); break;
+            case 0x2F: opts.out.print("TCC3:MC1"); break;
+            case 0x30: opts.out.print("TCC3:MC2"); break;
+            case 0x31: opts.out.print("TCC3:MC3"); break;
+            default: opts.out.print(ZeroRegs__UNKNOWN); break;
+        }
+        opts.out.print(" trigact=");
+        switch (DMAC->CHCTRLB.bit.TRIGACT) {
+            case 0x0: opts.out.print("BLOCK"); break;
+            /*case 0x1*/
+            case 0x2: opts.out.print("BURST"); break;
+            case 0x3: opts.out.print("TRANS"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        PRINTNL();
+    }
+
+    //FUTURE -- show DmacDescriptors?
 }
 
 

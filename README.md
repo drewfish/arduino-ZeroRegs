@@ -92,7 +92,7 @@ Prints out the configuration registers for the `ADC` peripheral.
 Prints out the configuration registers for the `DAC` peripheral.
 
 
-### void printZeroRegDMAC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
+### void printZeroRegDMAC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `DMAC` peripheral.
 
 

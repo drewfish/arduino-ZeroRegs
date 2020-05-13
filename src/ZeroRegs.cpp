@@ -273,7 +273,36 @@ void printZeroRegADC(ZeroRegOptions &opts) {
 
 
 void printZeroRegDAC(ZeroRegOptions &opts) {
-    // FUTURE
+    while (DAC->CTRLA.bit.SWRST || DAC->STATUS.bit.SYNCBUSY) {}
+    if (!DAC->CTRLA.bit.ENABLE && !opts.showDisabled) {
+        return;
+    }
+    opts.out.println("--------------------------- DAC");
+
+    opts.out.print("CTRLA: ");
+    PRINTFLAG(DAC->CTRLA, ENABLE);
+    PRINTFLAG(DAC->CTRLA, RUNSTDBY);
+    PRINTNL();
+
+    opts.out.print("CTRLB: ");
+    PRINTFLAG(DAC->CTRLB, EOEN);
+    PRINTFLAG(DAC->CTRLB, IOEN);
+    PRINTFLAG(DAC->CTRLB, LEFTADJ);
+    PRINTFLAG(DAC->CTRLB, VPD);
+    PRINTFLAG(DAC->CTRLB, BDWP);
+    opts.out.print(" refsel=");
+    switch (DAC->CTRLB.bit.REFSEL) {
+        case 0x0: opts.out.print("INTREF"); break;
+        case 0x1: opts.out.print("VDDANA"); break;
+        case 0x2: opts.out.print("VREFA"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
+    }
+    PRINTNL();
+
+    opts.out.print("EVCTRL: ");
+    PRINTFLAG(DAC->EVCTRL, STARTEI);
+    PRINTFLAG(DAC->EVCTRL, EMPTYEO);
+    PRINTNL();
 }
 
 

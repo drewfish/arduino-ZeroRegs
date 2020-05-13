@@ -88,7 +88,7 @@ Prints out the configuration registers for the `AC` peripheral.
 Prints out the configuration registers for the `ADC` peripheral.
 
 
-### void printZeroRegDAC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
+### void printZeroRegDAC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `DAC` peripheral.
 
 

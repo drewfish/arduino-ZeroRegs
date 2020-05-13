@@ -143,7 +143,132 @@ void printZeroRegAC(ZeroRegOptions &opts) {
 
 
 void printZeroRegADC(ZeroRegOptions &opts) {
-    // FUTURE
+    while (ADC->CTRLA.bit.SWRST || ADC->STATUS.bit.SYNCBUSY) {}
+    if (!ADC->CTRLA.bit.ENABLE && !opts.showDisabled) {
+        return;
+    }
+    opts.out.println("--------------------------- ADC");
+
+    opts.out.print("CTRLA: ");
+    PRINTFLAG(ADC->CTRLA, ENABLE);
+    PRINTFLAG(ADC->CTRLA, RUNSTDBY);
+    PRINTNL();
+
+    opts.out.print("CTRLB: ");
+    PRINTFLAG(ADC->CTRLB, DIFFMODE);
+    PRINTFLAG(ADC->CTRLB, LEFTADJ);
+    PRINTFLAG(ADC->CTRLB, FREERUN);
+    PRINTFLAG(ADC->CTRLB, CORREN);
+    opts.out.print(" ressel=");
+    switch (ADC->CTRLB.bit.RESSEL) {
+        case 0x0: opts.out.print("12BIT"); break;
+        case 0x1: opts.out.print("16BIT"); break;
+        case 0x2: opts.out.print("10BIT"); break;
+        case 0x3: opts.out.print("8BIT"); break;
+    }
+    opts.out.print(" PRESCALER=");
+    PRINTHEX(ADC->CTRLB.bit.PRESCALER);
+    PRINTNL();
+
+    opts.out.print("REFCTRL:  refsel=");
+    switch (ADC->REFCTRL.bit.REFSEL) {
+        case 0x0: opts.out.print("INTV1"); break;
+        case 0x1: opts.out.print("INTVCC0"); break;
+        case 0x2: opts.out.print("INTVCC1"); break;
+        case 0x3: opts.out.print("VREFA"); break;
+        case 0x4: opts.out.print("VREFB"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
+    }
+    PRINTFLAG(ADC->REFCTRL, REFCOMP);
+    PRINTNL();
+
+    opts.out.print("AVGCTRL:  samplenum=");
+    PRINTSCALE(ADC->AVGCTRL.bit.SAMPLENUM);
+    opts.out.print("samples ADJRES=");
+    PRINTHEX(ADC->AVGCTRL.bit.ADJRES);
+    PRINTNL();
+
+    opts.out.print("SAMPCTRL:  SAMPLEN=");
+    PRINTHEX(ADC->SAMPCTRL.bit.SAMPLEN);
+    PRINTNL();
+
+    opts.out.print("WINCTRL:  WINMODE=");
+    PRINTHEX(ADC->WINCTRL.bit.WINMODE);
+    PRINTNL();
+
+    opts.out.print("INPUTCTRL: ");
+    opts.out.print(" muxpos=");
+    if (ADC->INPUTCTRL.bit.MUXPOS <= 0x13) {
+        opts.out.print("AIN");
+        opts.out.print(ADC->INPUTCTRL.bit.MUXPOS);
+    } else {
+        switch (ADC->INPUTCTRL.bit.MUXPOS) {
+            case 0x18: opts.out.print("TEMP"); break;
+            case 0x19: opts.out.print("BANDGAP"); break;
+            case 0x1A: opts.out.print("SCALEDCOREVCC"); break;
+            case 0x1B: opts.out.print("SCALEDIOVCC"); break;
+            case 0x1C: opts.out.print("DAC"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+    }
+    opts.out.print(" muxneg=");
+    if (ADC->INPUTCTRL.bit.MUXNEG <= 0x7) {
+        opts.out.print("AIN");
+        opts.out.print(ADC->INPUTCTRL.bit.MUXNEG);
+    } else {
+        switch (ADC->INPUTCTRL.bit.MUXNEG) {
+            case 0x18: opts.out.print("GND"); break;
+            case 0x19: opts.out.print("IOGND"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+    }
+    opts.out.print(" INPUTSCAN=");
+    opts.out.print(ADC->INPUTCTRL.bit.INPUTSCAN);
+    opts.out.print(" INPUTOFFSET=");
+    opts.out.print(ADC->INPUTCTRL.bit.INPUTOFFSET);
+    opts.out.print(" gain=");
+    switch (ADC->INPUTCTRL.bit.GAIN) {
+        case 0x0: opts.out.print("1x"); break;
+        case 0x1: opts.out.print("2x"); break;
+        case 0x2: opts.out.print("4x"); break;
+        case 0x3: opts.out.print("8x"); break;
+        case 0x4: opts.out.print("16x"); break;
+        /*...*/
+        case 0xF: opts.out.print("x/2"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
+    }
+    PRINTNL();
+
+    opts.out.print("EVCTRL: ");
+    PRINTFLAG(ADC->EVCTRL, STARTEI);
+    PRINTFLAG(ADC->EVCTRL, SYNCEI);
+    PRINTFLAG(ADC->EVCTRL, RESRDYEO);
+    PRINTFLAG(ADC->EVCTRL, WINMONEO);
+    PRINTNL();
+
+    opts.out.print("WINLT:  ");
+    opts.out.print(ADC->WINLT.bit.WINLT);
+    PRINTNL();
+
+    opts.out.print("WINUT:  ");
+    opts.out.print(ADC->WINUT.bit.WINUT);
+    PRINTNL();
+
+    if (ADC->CTRLB.bit.CORREN) {
+        opts.out.print("GAINCORR:  ");
+        PRINTHEX(ADC->GAINCORR.bit.GAINCORR);
+        PRINTNL();
+
+        opts.out.print("OFFSETCORR:  ");
+        PRINTHEX(ADC->OFFSETCORR.bit.OFFSETCORR);
+        PRINTNL();
+    }
+
+    opts.out.print("CALIB:  LINEARITY_CAL=");
+    PRINTHEX(ADC->CALIB.bit.LINEARITY_CAL);
+    opts.out.print(" BIAS_CAL=");
+    PRINTHEX(ADC->CALIB.bit.BIAS_CAL);
+    PRINTNL();
 }
 
 

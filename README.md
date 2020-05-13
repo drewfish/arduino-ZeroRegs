@@ -84,7 +84,7 @@ Prints out configuration registers, as many as this library knows how.
 Prints out the configuration registers for the `AC` peripheral.
 
 
-### void printZeroRegADC(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
+### void printZeroRegADC(ZeroRegOptions &opts)
 Prints out the configuration registers for the `ADC` peripheral.
 
 

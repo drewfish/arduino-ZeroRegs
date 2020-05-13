@@ -700,9 +700,130 @@ void printZeroRegGCLK(ZeroRegOptions &opts) {
 
 void printZeroRegI2S(ZeroRegOptions &opts) {
 #ifdef I2S
-    //FUTURE -- print I2S
-#else
-    //FUTURE -- print message about missing I2S
+    while (I2S->SYNCBUSY.bit.SWRST || I2S->SYNCBUSY.bit.ENABLE) {}
+    if (!I2S->CTRLA.bit.ENABLE && !opts.showDisabled) {
+        return;
+    }
+    opts.out.println("--------------------------- I2S");
+
+    opts.out.print("CTRLA: ");
+    PRINTFLAG(I2S->CTRLA, ENABLE);
+    while (I2S->SYNCBUSY.bit.CKEN0) {}
+    PRINTFLAG(I2S->CTRLA, CKEN0);
+    while (I2S->SYNCBUSY.bit.CKEN1) {}
+    PRINTFLAG(I2S->CTRLA, CKEN1);
+    while (I2S->SYNCBUSY.bit.SEREN0) {}
+    PRINTFLAG(I2S->CTRLA, SEREN0);
+    while (I2S->SYNCBUSY.bit.SEREN1) {}
+    PRINTFLAG(I2S->CTRLA, SEREN1);
+    PRINTNL();
+
+    for (uint8_t i; i < 2; i++) {
+        opts.out.print("CLKCTRL");
+        opts.out.print(i);
+        opts.out.print(":  slots=");
+        opts.out.print(I2S->CLKCTRL[i].bit.NBSLOTS + 1);
+        opts.out.print("x");
+        switch (I2S->CLKCTRL[i].bit.SLOTSIZE) {
+            case 0x0: opts.out.print("8bit"); break;
+            case 0x1: opts.out.print("16bit"); break;
+            case 0x2: opts.out.print("24bit"); break;
+            case 0x3: opts.out.print("32bit"); break;
+        }
+        opts.out.print(" fswidth=");
+        switch (I2S->CLKCTRL[i].bit.FSWIDTH) {
+            case 0x0: opts.out.print("SLOT"); break;
+            case 0x1: opts.out.print("HALF"); break;
+            case 0x2: opts.out.print("BIT"); break;
+            case 0x3: opts.out.print("BURST"); break;
+        }
+        opts.out.print(" bitdelay=");
+        opts.out.print(I2S->CLKCTRL[i].bit.BITDELAY ? "I2S" : "LJ");
+
+        opts.out.print(" mck=");
+        opts.out.print(I2S->CLKCTRL[i].bit.MCKSEL ? "MCKPIN" : "GCLK");
+        if (I2S->CLKCTRL[i].bit.MCKEN) {
+            opts.out.print(" mckout=");
+            opts.out.print(I2S->CLKCTRL[i].bit.MCKSEL ? "MCKPIN" : "GCLK");
+            opts.out.print("/");
+            opts.out.print(I2S->CLKCTRL[i].bit.MCKOUTDIV + 1);
+            PRINTFLAG(I2S->CLKCTRL[i], MCKOUTINV);
+        }
+
+        opts.out.print(" sck=");
+        opts.out.print(I2S->CLKCTRL[i].bit.SCKSEL ? "SCKPIN" : "MCKDIV");
+        if (I2S->CLKCTRL[i].bit.SCKSEL == 0) {
+            opts.out.print("(");
+            opts.out.print(I2S->CLKCTRL[i].bit.MCKSEL ? "MCKPIN" : "GCLK");
+            opts.out.print("/");
+            opts.out.print(I2S->CLKCTRL[i].bit.MCKDIV + 1);
+            opts.out.print(")");
+        }
+        PRINTFLAG(I2S->CLKCTRL[i], SCKOUTINV);
+
+        opts.out.print(" fs=");
+        opts.out.print(I2S->CLKCTRL[i].bit.FSSEL ? "FSPIN" : "SCKDIV");
+        PRINTFLAG(I2S->CLKCTRL[i], FSINV);
+        PRINTFLAG(I2S->CLKCTRL[i], FSOUTINV);
+
+        PRINTNL();
+    }
+
+    for (uint8_t i; i < 2; i++) {
+        opts.out.print("SERCTRL");
+        opts.out.print(i);
+        opts.out.print(":  sermode=");
+        switch (I2S->SERCTRL[i].bit.SERMODE) {
+            case 0x0: opts.out.print("RX"); break;
+            case 0x1: opts.out.print("TX"); break;
+            case 0x2: opts.out.print("PDM2"); break;
+            case 0x3: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        switch (I2S->SERCTRL[i].bit.TXDEFAULT) {
+            case 0x0: opts.out.print("ZERO"); break;
+            case 0x1: opts.out.print("ONE"); break;
+            case 0x2: opts.out.print(ZeroRegs__RESERVED); break;
+            case 0x3: opts.out.print("HIZ"); break;
+        }
+        PRINTFLAG(I2S->SERCTRL[i], TXSAME);
+        opts.out.print(" clksel=CLK");
+        opts.out.print(I2S->SERCTRL[i].bit.CLKSEL);
+        opts.out.print(" slotadj=");
+        opts.out.print(I2S->SERCTRL[i].bit.SLOTADJ ? "LEFT" : "RIGHT");
+        opts.out.print(" datasize=");
+        switch (I2S->SERCTRL[i].bit.DATASIZE) {
+            case 0x0: opts.out.print("32"); break;
+            case 0x1: opts.out.print("24"); break;
+            case 0x2: opts.out.print("20"); break;
+            case 0x3: opts.out.print("18"); break;
+            case 0x4: opts.out.print("16"); break;
+            case 0x5: opts.out.print("16C"); break;
+            case 0x6: opts.out.print("8"); break;
+            case 0x7: opts.out.print("8C"); break;
+        }
+        opts.out.print(" wordadj=");
+        opts.out.print(I2S->SERCTRL[i].bit.WORDADJ ? "LEFT" : "RIGHT");
+        opts.out.print(" extend=");
+        switch (I2S->SERCTRL[i].bit.EXTEND) {
+            case 0x0: opts.out.print("ZERO"); break;
+            case 0x1: opts.out.print("ONE"); break;
+            case 0x2: opts.out.print("MSBIT"); break;
+            case 0x3: opts.out.print("LSBIT"); break;
+        }
+        opts.out.print(" bitrev=");
+        opts.out.print(I2S->SERCTRL[i].bit.BITREV ? "LSBIT" : "MSBIT");
+        for (uint8_t j = 0; j < 8; j++) {
+            if (I2S->SERCTRL[i].vec.SLOTDIS & (1<<j)) {
+                opts.out.print(" SLOTDIS");
+                opts.out.print(j);
+            }
+        }
+        opts.out.print(I2S->SERCTRL[i].bit.MONO ? " MONO" : " STEREO");
+        opts.out.print(" dma=");
+        opts.out.print(I2S->SERCTRL[i].bit.DMA ? "MULTIPLE" : "SINGLE");
+        PRINTFLAG(I2S->SERCTRL[i], RXLOOP);
+        PRINTNL();
+    }
 #endif
 }
 

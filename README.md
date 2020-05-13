@@ -133,7 +133,7 @@ GCLK_DAC:  CLKEN GEN00
 ```
 
 
-### void printZeroRegI2S(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
+### void printZeroRegI2S(ZeroRegOptions &opts)
 Prints out the configuration registers for the `I2S` peripheral.
 
 

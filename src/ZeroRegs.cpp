@@ -37,6 +37,7 @@ DSrevF:  Refers to SAM D21/DA1 Family datasheet revision F (March 2020).
 
 static const char* ZeroRegs__DISABLED = "--disabled--";
 static const char* ZeroRegs__RESERVED = "--reserved--";
+static const char* ZeroRegs__UNKNOWN = "--unknown--";
 static const char* ZeroRegs__empty = "";
 #define PRINTFLAG(x,y) do { if (x.bit.y) { opts.out.print(" " #y); } } while(0)
 #define PRINTHEX(x) do { opts.out.print("0x"); opts.out.print(x, HEX); } while(0)
@@ -2161,7 +2162,100 @@ void printZeroRegSYSCTRL(ZeroRegOptions &opts) {
 
 
 void printZeroRegTC(ZeroRegOptions &opts, Tc* tc, uint8_t idx) {
-    // FUTURE
+    while (tc->COUNT8.CTRLA.bit.SWRST || tc->COUNT8.STATUS.bit.SYNCBUSY) {}
+    if (!opts.showDisabled && !tc->COUNT8.CTRLA.bit.ENABLE) {
+        return;
+    }
+    opts.out.print("--------------------------- TC");
+    opts.out.print(idx);
+    opts.out.print(" ");
+    switch (tc->COUNT8.CTRLA.bit.MODE) {
+        case 0x0: opts.out.println("COUNT16"); break;
+        case 0x1: opts.out.println("COUNT8"); break;
+        case 0x2: opts.out.println("COUNT32"); break;
+        default:
+                  opts.out.println(ZeroRegs__UNKNOWN);
+                  return;
+    }
+
+    opts.out.print("CTRLA: ");
+    PRINTFLAG(tc->COUNT8.CTRLA, ENABLE);
+    PRINTFLAG(tc->COUNT8.CTRLA, RUNSTDBY);
+    opts.out.print(" wavegen=");
+    switch (tc->COUNT8.CTRLA.bit.WAVEGEN) {
+        case 0x0: opts.out.print("NFRQ"); break;
+        case 0x1: opts.out.print("MFRQ"); break;
+        case 0x2: opts.out.print("NPWM"); break;
+        case 0x3: opts.out.print("MPWM"); break;
+    }
+    opts.out.print(" prescaler=");
+    switch (tc->COUNT8.CTRLA.bit.PRESCALER) {
+        case 0x0: opts.out.print("DIV1"); break;
+        case 0x1: opts.out.print("DIV2"); break;
+        case 0x2: opts.out.print("DIV4"); break;
+        case 0x3: opts.out.print("DIV8"); break;
+        case 0x4: opts.out.print("DIV16"); break;
+        case 0x5: opts.out.print("DIV64"); break;
+        case 0x6: opts.out.print("DIV256"); break;
+        case 0x7: opts.out.print("DIV1024"); break;
+    }
+    opts.out.print(" prescsync=");
+    switch (tc->COUNT8.CTRLA.bit.PRESCSYNC) {
+        case 0x0: opts.out.print("GCLK"); break;
+        case 0x1: opts.out.print("PRESC"); break;
+        case 0x2: opts.out.print("RESYNC"); break;
+        default:  opts.out.print(ZeroRegs__UNKNOWN); break;
+    }
+    PRINTNL();
+
+    opts.out.print("CTRLB:  dir=");
+    opts.out.print(tc->COUNT8.CTRLBSET.bit.DIR ? "DOWN" : "UP");
+    PRINTFLAG(tc->COUNT8.CTRLBSET, ONESHOT);
+    PRINTNL();
+
+    opts.out.print("CTRLC: ");
+    PRINTFLAG(tc->COUNT8.CTRLC, INVEN0);
+    PRINTFLAG(tc->COUNT8.CTRLC, INVEN1);
+    PRINTFLAG(tc->COUNT8.CTRLC, CPTEN0);
+    PRINTFLAG(tc->COUNT8.CTRLC, CPTEN1);
+    PRINTNL();
+
+    opts.out.print("EVCTRL:  evact=");
+    switch (tc->COUNT8.EVCTRL.bit.EVACT) {
+        case 0x0: opts.out.print("OFF"); break;
+        case 0x1: opts.out.print("RETRIGGER"); break;
+        case 0x2: opts.out.print("COUNT"); break;
+        case 0x3: opts.out.print("START"); break;
+        case 0x4: opts.out.print(ZeroRegs__RESERVED); break;
+        case 0x5: opts.out.print("PPW"); break;
+        case 0x6: opts.out.print("PWP"); break;
+        case 0x7: opts.out.print(ZeroRegs__RESERVED); break;
+    }
+    PRINTFLAG(tc->COUNT8.EVCTRL, TCINV);
+    PRINTFLAG(tc->COUNT8.EVCTRL, TCEI);
+    PRINTFLAG(tc->COUNT8.EVCTRL, OVFEO);
+    PRINTFLAG(tc->COUNT8.EVCTRL, MCEO0);
+    PRINTFLAG(tc->COUNT8.EVCTRL, MCEO1);
+    PRINTNL();
+
+    if (tc->COUNT8.CTRLA.bit.MODE == 0x1) {
+        opts.out.print("PER:  ");
+        opts.out.println(tc->COUNT8.PER.bit.PER);
+    }
+
+    opts.out.print("CC0:  ");
+    switch (tc->COUNT8.CTRLA.bit.MODE) {
+        case 0x0: opts.out.println(tc->COUNT16.CC[0].bit.CC); break;
+        case 0x1: opts.out.println(tc->COUNT8.CC[0].bit.CC); break;
+        case 0x2: opts.out.println(tc->COUNT32.CC[0].bit.CC); break;
+    }
+
+    opts.out.print("CC1:  ");
+    switch (tc->COUNT8.CTRLA.bit.MODE) {
+        case 0x0: opts.out.println(tc->COUNT16.CC[1].bit.CC); break;
+        case 0x1: opts.out.println(tc->COUNT8.CC[1].bit.CC); break;
+        case 0x2: opts.out.println(tc->COUNT32.CC[1].bit.CC); break;
+    }
 }
 
 

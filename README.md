@@ -285,8 +285,19 @@ VREF:  CALIB=0x60
 ```
 
 
-### void printZeroRegTC(ZeroRegOptions &opts, Tc* tc, uint8_t idx) -- **NOT YET IMPLEMENTED**
+### void printZeroRegTC(ZeroRegOptions &opts, Tc* tc, uint8_t idx)
 Prints out the configuration registers for a `TC` peripheral.
+
+example output:
+```text
+--------------------------- TC3 COUNT16
+CTRLA:  ENABLE wavegen=NPWM prescaler=DIV1 prescsync=GCLK
+CTRLB:  dir=UP
+CTRLC:
+EVCTRL:  evact=OFF
+CC0:  2304
+CC1:  0
+```
 
 
 ### void printZeroRegTCC(ZeroRegOptions &opts, Tcc* tcc, uint8_t idx) -- **NOT YET IMPLEMENTED**

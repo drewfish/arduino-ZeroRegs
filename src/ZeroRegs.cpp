@@ -38,6 +38,19 @@ DSrevF:  Refers to SAM D21/DA1 Family datasheet revision F (March 2020).
 static const char* ZeroRegs__DISABLED = "--disabled--";
 static const char* ZeroRegs__RESERVED = "--reserved--";
 static const char* ZeroRegs__UNKNOWN = "--unknown--";
+static const char* ZeroRegs__i2c_scl = "i2c:scl";
+static const char* ZeroRegs__i2c_sclout = "i2c:sclout";
+static const char* ZeroRegs__i2c_sda = "i2c:sda";
+static const char* ZeroRegs__i2c_sdaout = "i2c:sdaout";
+static const char* ZeroRegs__spi_miso = "spi:miso";
+static const char* ZeroRegs__spi_mosi = "spi:mosi";
+static const char* ZeroRegs__spi_sck = "spi:sck";
+static const char* ZeroRegs__spi_ss = "spi:ss";
+static const char* ZeroRegs__usart_cts = "usart:cts";
+static const char* ZeroRegs__usart_rts = "usart:rts";
+static const char* ZeroRegs__usart_rx = "usart:rx";
+static const char* ZeroRegs__usart_tx = "usart:tx";
+static const char* ZeroRegs__usart_xck = "usart:xck";
 static const char* ZeroRegs__empty = "";
 #define PRINTFLAG(x,y) do { if (x.bit.y) { opts.out.print(" " #y); } } while(0)
 #define PRINTHEX(x) do { opts.out.print("0x"); opts.out.print(x, HEX); } while(0)
@@ -49,6 +62,7 @@ static const char* ZeroRegs__empty = "";
 #define READFUSE(x,y) ((*((uint32_t *) x##_FUSES_##y##_ADDR) & x##_FUSES_##y##_Msk) >> x##_FUSES_##y##_Pos)
 #define READSCS(val,name) ( (val & (name##_Msk)) >> (name##_Pos) )
 #define WRITE8(x,y) *((uint8_t*)&(x)) = uint8_t(y)
+void printZeroRegSERCOM_pinhint(ZeroRegOptions &opts, const char* pmux);
 
 
 void printZeroReg_QOS(ZeroRegOptions &opts, uint8_t qos) {
@@ -1347,10 +1361,14 @@ void printZeroRegPORT_pin(ZeroRegOptions &opts, uint8_t gid, uint8_t pid) {
         }
         opts.out.print("pmux=");
         const char *pmuxName = ZeroRegsPORT_pins[gid][pid].pmux[pmux];
-        if (!pmuxName) {
-            pmuxName = ZeroRegsPORT_PMUXs[pmux].name;
+        if (pmuxName) {
+            opts.out.print(pmuxName);
+            if (pmux == 2 || pmux == 3) {
+                printZeroRegSERCOM_pinhint(opts, pmuxName);
+            }
+        } else {
+            opts.out.print(ZeroRegsPORT_PMUXs[pmux].name);
         }
-        opts.out.print(pmuxName);
         if (!dir && !inen && !pullen) {
             // [23.6.3.4 DSrevF] Digital Functionality Disabled
             return;
@@ -1414,8 +1432,8 @@ void printZeroRegPORT_Arduino(ZeroRegOptions &opts) {
     int8_t aid = -1;
     for (uint8_t did = 0; did < PINS_COUNT; did++) {
         PinDescription pinDesc = g_APinDescription[did];
-        uint8_t gid = pinDesc.ulPort;
-        uint8_t pid = pinDesc.ulPin;
+        int8_t gid = pinDesc.ulPort;
+        int8_t pid = pinDesc.ulPin;
         if (gid == NOT_A_PORT || pinDesc.ulPinType == PIO_NOT_A_PIN) {
             continue;
         }
@@ -1678,6 +1696,167 @@ void printZeroRegSCS(ZeroRegOptions &opts) {
     }
 }
 
+
+// `pmux` is a string "SERCOMx:y"
+void printZeroRegSERCOM_pinhint(ZeroRegOptions &opts, const char* pmux) {
+    if (!pmux) {
+        return;
+    }
+    uint8_t x = pmux[6] - '0';
+    uint8_t y = pmux[8] - '0';
+    Sercom* sercom;
+    switch (x) {
+        case 0: sercom = SERCOM0; break;
+        case 1: sercom = SERCOM1; break;
+        case 2: sercom = SERCOM2; break;
+        case 3: sercom = SERCOM3; break;
+#ifdef SERCOM4
+        case 4: sercom = SERCOM4; break;
+#endif
+#ifdef SERCOM5
+        case 5: sercom = SERCOM5; break;
+#endif
+        default: return;
+    }
+    const char* pads[4];
+    pads[0] = NULL;
+    pads[1] = NULL;
+    pads[2] = NULL;
+    pads[3] = NULL;
+    switch (sercom->I2CM.CTRLA.bit.MODE) {
+        case 0x0:
+            // USART external clock
+            switch (sercom->USART.CTRLA.bit.RXPO) {
+                case 0x0: pads[0] = ZeroRegs__usart_rx; break;
+                case 0x1: pads[1] = ZeroRegs__usart_rx; break;
+                case 0x2: pads[2] = ZeroRegs__usart_rx; break;
+                case 0x3: pads[3] = ZeroRegs__usart_rx; break;
+            }
+            switch (sercom->USART.CTRLA.bit.TXPO) {
+                case 0x0:
+                    pads[0] = ZeroRegs__usart_tx;
+                    pads[1] = ZeroRegs__usart_xck;
+                    break;
+                case 0x1:
+                    pads[2] = ZeroRegs__usart_tx;
+                    pads[3] = ZeroRegs__usart_xck;
+                    break;
+                case 0x2:
+                    pads[0] = ZeroRegs__usart_tx;
+                    pads[2] = ZeroRegs__usart_rts;
+                    pads[2] = ZeroRegs__usart_cts;
+                    break;
+            }
+            break;
+        case 0x1:
+            // USART internal clock
+            switch (sercom->USART.CTRLA.bit.RXPO) {
+                case 0x0: pads[0] = ZeroRegs__usart_rx; break;
+                case 0x1: pads[1] = ZeroRegs__usart_rx; break;
+                case 0x2: pads[2] = ZeroRegs__usart_rx; break;
+                case 0x3: pads[3] = ZeroRegs__usart_rx; break;
+            }
+            switch (sercom->USART.CTRLA.bit.TXPO) {
+                case 0x0:
+                    pads[0] = ZeroRegs__usart_tx;
+                    break;
+                case 0x1:
+                    pads[2] = ZeroRegs__usart_tx;
+                    break;
+                case 0x2:
+                    pads[0] = ZeroRegs__usart_tx;
+                    pads[2] = ZeroRegs__usart_rts;
+                    pads[2] = ZeroRegs__usart_cts;
+                    break;
+            }
+            break;
+        case 0x2:
+            // SPI slave
+            switch (sercom->SPI.CTRLA.bit.DIPO) {
+                case 0x0: pads[0] = ZeroRegs__spi_mosi; break;
+                case 0x1: pads[1] = ZeroRegs__spi_mosi; break;
+                case 0x2: pads[2] = ZeroRegs__spi_mosi; break;
+                case 0x3: pads[3] = ZeroRegs__spi_mosi; break;
+            }
+            switch (sercom->SPI.CTRLA.bit.DOPO) {
+                case 0x0:
+                    pads[0] = ZeroRegs__spi_miso;
+                    pads[1] = ZeroRegs__spi_sck;
+                    pads[2] = ZeroRegs__spi_ss;
+                    break;
+                case 0x1:
+                    pads[2] = ZeroRegs__spi_miso;
+                    pads[3] = ZeroRegs__spi_sck;
+                    pads[1] = ZeroRegs__spi_ss;
+                    break;
+                case 0x2:
+                    pads[3] = ZeroRegs__spi_miso;
+                    pads[1] = ZeroRegs__spi_sck;
+                    pads[2] = ZeroRegs__spi_ss;
+                    break;
+                case 0x3:
+                    pads[0] = ZeroRegs__spi_miso;
+                    pads[3] = ZeroRegs__spi_sck;
+                    pads[1] = ZeroRegs__spi_ss;
+                    break;
+            }
+            break;
+        case 0x3:
+            // SPI master
+            switch (sercom->SPI.CTRLA.bit.DIPO) {
+                case 0x0: pads[0] = ZeroRegs__spi_miso; break;
+                case 0x1: pads[1] = ZeroRegs__spi_miso; break;
+                case 0x2: pads[2] = ZeroRegs__spi_miso; break;
+                case 0x3: pads[3] = ZeroRegs__spi_miso; break;
+            }
+            switch (sercom->SPI.CTRLA.bit.DOPO) {
+                case 0x0:
+                    pads[0] = ZeroRegs__spi_mosi;
+                    pads[1] = ZeroRegs__spi_sck;
+                    if (sercom->SPI.CTRLB.bit.MSSEN) {
+                        pads[2] = ZeroRegs__spi_ss;
+                    }
+                    break;
+                case 0x1:
+                    pads[2] = ZeroRegs__spi_mosi;
+                    pads[3] = ZeroRegs__spi_sck;
+                    if (sercom->SPI.CTRLB.bit.MSSEN) {
+                        pads[1] = ZeroRegs__spi_ss;
+                    }
+                    break;
+                case 0x2:
+                    pads[3] = ZeroRegs__spi_mosi;
+                    pads[1] = ZeroRegs__spi_sck;
+                    if (sercom->SPI.CTRLB.bit.MSSEN) {
+                        pads[2] = ZeroRegs__spi_ss;
+                    }
+                    break;
+                case 0x3:
+                    pads[0] = ZeroRegs__spi_mosi;
+                    pads[3] = ZeroRegs__spi_sck;
+                    if (sercom->SPI.CTRLB.bit.MSSEN) {
+                        pads[1] = ZeroRegs__spi_ss;
+                    }
+                    break;
+            }
+            break;
+        case 0x4:
+        case 0x5:
+            // I2S (master or slave)
+            pads[0] = ZeroRegs__i2c_sda;
+            pads[1] = ZeroRegs__i2c_scl;
+            pads[2] = ZeroRegs__i2c_sdaout;
+            pads[3] = ZeroRegs__i2c_sclout;
+            break;
+        default:
+            return;
+    }
+    if (pads[y]) {
+        opts.out.print("(");
+        opts.out.print(pads[y]);
+        opts.out.print(")");
+    }
+}
 
 void printZeroRegSERCOM_I2CM(ZeroRegOptions &opts, SercomI2cm &i2cm) {
     opts.out.print("CTRLA: ");

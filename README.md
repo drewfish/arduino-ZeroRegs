@@ -180,13 +180,13 @@ Prints out the configuration registers for the `PORT` peripheral.
 example output:
 ```text
 --------------------------- PORT A
-PA10:  pmux=SERCOM0:2
-PA11:  pmux=SERCOM0:3
-PA12:  pmux=SERCOM4:0
+PA10:  pmux=SERCOM0:2(usart:tx)
+PA11:  pmux=SERCOM0:3(usart:rx)
+PA12:  pmux=SERCOM4:0(spi:miso)
 PA17:  output INEN
 PA19:  pmux=EIC:3 input INEN pull=UP
-PA22:  pmux=SERCOM3:0
-PA23:  pmux=SERCOM3:1
+PA22:  pmux=SERCOM3:0(i2c:sda)
+PA23:  pmux=SERCOM3:1(i2c:scl)
 PA24:  pmux=USB:DN
 PA25:  pmux=USB:DP
 PA27:  output INEN
@@ -194,8 +194,8 @@ PA30:  pmux=SWCLK
 --------------------------- PORT B
 PB03:  output INEN
 PB09:  pmux=ADC:3,Y15
-PB10:  pmux=SERCOM4:2
-PB11:  pmux=SERCOM4:3
+PB10:  pmux=SERCOM4:2(spi:mosi)
+PB11:  pmux=SERCOM4:3(spi:sck)
 PB30:  output DRVSTR
 ```
 
@@ -205,16 +205,16 @@ Prints out the `PORT` configuration for the Arduino pins.
 example output:
 ```text
 --------------------------- ARDUINO PINS
-D0:  pmux=SERCOM0:3
-D1:  pmux=SERCOM0:2
+D0:  pmux=SERCOM0:3(usart:rx)
+D1:  pmux=SERCOM0:2(usart:tx)
 D12:  pmux=EIC:3 input INEN pull=UP
 D13:  output INEN
 A2:  pmux=ADC:3,Y15
-D20:  pmux=SERCOM3:0
-D21:  pmux=SERCOM3:1
-D22:  pmux=SERCOM4:0
-D23:  pmux=SERCOM4:2
-D24:  pmux=SERCOM4:3
+D20:  pmux=SERCOM3:0(i2c:sda)
+D21:  pmux=SERCOM3:1(i2c:scl)
+D22:  pmux=SERCOM4:0(spi:miso)
+D23:  pmux=SERCOM4:2(spi:mosi)
+D24:  pmux=SERCOM4:3(spi:sck)
 D25:  output INEN
 ```
 

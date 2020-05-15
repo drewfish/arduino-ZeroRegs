@@ -2488,11 +2488,208 @@ void printZeroRegTCC(ZeroRegOptions &opts, Tcc* tcc, uint8_t idx) {
 }
 
 
+#ifdef USB
+void printZeroRegUSB_PADCAL(ZeroRegOptions &opts, volatile USB_PADCAL_Type &pad) {
+    opts.out.print("PADCAL:  TRANSP=");
+    PRINTHEX(pad.bit.TRANSP);
+    opts.out.print(" TRANSN=");
+    PRINTHEX(pad.bit.TRANSN);
+    opts.out.print(" TRIM=");
+    PRINTHEX(pad.bit.TRIM);
+    PRINTNL();
+}
+
+void printZeroRegUSB_DESCADD(ZeroRegOptions &opts, uint8_t n, uint8_t b, bool isHost) {
+    uint32_t addr = USB->HOST.DESCADD.bit.DESCADD;
+    // UsbHostDescBank has all the fields we care about
+    UsbHostDescBank* desc = (UsbHostDescBank*)(addr + (n * sizeof(UsbHostDescriptor)) + (b * sizeof(UsbHostDescBank)));
+    opts.out.print(" ADDR=");
+    PRINTHEX(desc->ADDR.bit.ADDR);
+    opts.out.print(" size=");
+    switch (desc->PCKSIZE.bit.SIZE) {
+        case 0x0: opts.out.print("8byte"); break;
+        case 0x1: opts.out.print("16byte"); break;
+        case 0x2: opts.out.print("32byte"); break;
+        case 0x3: opts.out.print("64byte"); break;
+        case 0x4: opts.out.print("128byte"); break;
+        case 0x5: opts.out.print("256byte"); break;
+        case 0x6: opts.out.print("512byte"); break;
+        case 0x7: opts.out.print("1023byte"); break;
+    }
+    PRINTFLAG(desc->PCKSIZE, AUTO_ZLP);
+    if (b == 0) {
+        //FUTURE -- parse out SUBPID:4 and VARIABLE:11
+        opts.out.print(" EXTREG=");
+        PRINTHEX(desc->EXTREG.reg);
+    }
+    if (isHost) {
+        opts.out.print(" PDADDR=");
+        PRINTHEX(desc->CTRL_PIPE.bit.PDADDR);
+        opts.out.print(" PEPNUM=");
+        opts.out.print(desc->CTRL_PIPE.bit.PEPNUM);
+        opts.out.print(" PERMAX=");
+        opts.out.print(desc->CTRL_PIPE.bit.PERMAX);
+    }
+}
+
+void printZeroRegUSB_DEVICE(ZeroRegOptions &opts, UsbDevice &dev) {
+    opts.out.print("CTRLB: ");
+    PRINTFLAG(dev.CTRLB, DETACH);
+    PRINTFLAG(dev.CTRLB, UPRSM);
+    opts.out.print(" spdconf=");
+    switch (dev.CTRLB.bit.SPDCONF) {
+        case 0x0: opts.out.print("FS"); break;
+        case 0x1: opts.out.print("LS"); break;
+        default: opts.out.print(ZeroRegs__RESERVED); break;
+    }
+    PRINTFLAG(dev.CTRLB, NREPLY);
+    // for testing purposes:
+    //  TSTJ:1
+    //  TSTK:1
+    //  TSTPCKT:1
+    //  OPMODE2:1
+    PRINTFLAG(dev.CTRLB, GNAK);
+    opts.out.print(" LPMHDSK=");
+    PRINTHEX(dev.CTRLB.bit.LPMHDSK);
+    PRINTNL();
+
+    opts.out.print("DADD:  ");
+    PRINTHEX(dev.DADD.bit.DADD);
+    PRINTFLAG(dev.DADD, ADDEN);
+    PRINTNL();
+
+    printZeroRegUSB_PADCAL(opts, dev.PADCAL);
+
+    for (uint8_t n = 0; n < 8; n++) {
+        opts.out.print("ENDPOINT");
+        opts.out.print(n);
+        opts.out.print(": ");
+        PRINTFLAG(dev.DeviceEndpoint[n].EPCFG, NYETDIS);
+        PRINTNL();
+
+        uint8_t b = 0;
+        bool disabled = false;
+        opts.out.print("    BANK0:  eptype=");
+        switch (dev.DeviceEndpoint[n].EPCFG.bit.EPTYPE0) {
+            case 0x0:
+                opts.out.print(ZeroRegs__DISABLED);
+                disabled = true;
+                break;
+            case 0x1: opts.out.print("CTRL-out"); break;
+            case 0x2: opts.out.print("ISO-out"); break;
+            case 0x3: opts.out.print("BULK-out"); break;
+            case 0x4: opts.out.print("INT-out"); break;
+            case 0x5: opts.out.print("DUAL-in"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        if (!disabled || opts.showDisabled) {
+            printZeroRegUSB_DESCADD(opts, n, b, false);
+        }
+        PRINTNL();
+
+        b = 1;
+        disabled = false;
+        opts.out.print("    BANK1:  eptype=");
+        switch (dev.DeviceEndpoint[n].EPCFG.bit.EPTYPE1) {
+            case 0x0:
+                opts.out.print(ZeroRegs__DISABLED);
+                disabled = true;
+                break;
+            case 0x1: opts.out.print("CTRL-in"); break;
+            case 0x2: opts.out.print("ISO-in"); break;
+            case 0x3: opts.out.print("BULK-in"); break;
+            case 0x4: opts.out.print("INT-in"); break;
+            case 0x5: opts.out.print("DUAL-out"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        if (!disabled || opts.showDisabled) {
+            printZeroRegUSB_DESCADD(opts, n, b, false);
+        }
+        PRINTNL();
+    }
+}
+
+void printZeroRegUSB_HOST(ZeroRegOptions &opts, UsbHost &host) {
+
+    opts.out.print("CTRLB:  SPDCONF=");
+    PRINTHEX(host.CTRLB.bit.SPDCONF);
+    PRINTFLAG(host.CTRLB, RESUME);
+    // for testing purposes:
+    //  TSTJ:1
+    //  TSTK:1
+    PRINTFLAG(host.CTRLB, SOFE);
+    PRINTNL();
+
+    opts.out.print("HSOFC:  FLENC=");
+    PRINTHEX(host.HSOFC.bit.FLENC);
+    PRINTFLAG(host.HSOFC, FLENCE);
+    PRINTNL();
+
+    printZeroRegUSB_PADCAL(opts, host.PADCAL);
+
+    for (uint8_t n = 0; n < 8; n++) {
+        opts.out.print("PIPE");
+        opts.out.print(n);
+        opts.out.print(":  ptype=");
+        bool disabled = false;
+        switch (host.HostPipe[n].PCFG.bit.PTYPE) {
+            case 0x0:
+                opts.out.print(ZeroRegs__DISABLED);
+                disabled = true;
+                break;
+            case 0x1: opts.out.print("CTRL"); break;
+            case 0x2: opts.out.print("ISO"); break;
+            case 0x3: opts.out.print("BULK"); break;
+            case 0x4: opts.out.print("INT"); break;
+            case 0x5: opts.out.print("EXT"); break;
+            default: opts.out.print(ZeroRegs__RESERVED); break;
+        }
+        if (disabled && !opts.showDisabled) {
+            continue;
+        }
+        opts.out.print(" bk=");
+        opts.out.print(host.HostPipe[n].PCFG.bit.BK ? "DUAL" : "SINGLE");
+        opts.out.print(" BINTERVAL=");
+        opts.out.print(host.HostPipe[n].BINTERVAL.bit.BITINTERVAL);
+        PRINTNL();
+
+        opts.out.print("    BANK0: ");
+        printZeroRegUSB_DESCADD(opts, n, 0, true);
+        PRINTNL();
+
+        opts.out.print("    BANK1: ");
+        printZeroRegUSB_DESCADD(opts, n, 1, true);
+        PRINTNL();
+    }
+}
+#endif
+
 void printZeroRegUSB(ZeroRegOptions &opts) {
 #ifdef USB
-    //FUTURE -- print USB
-#else
-    //FUTURE -- print message about missing USB
+    while (USB->DEVICE.SYNCBUSY.bit.SWRST || USB->DEVICE.SYNCBUSY.bit.ENABLE) {}
+    if (!USB->DEVICE.CTRLA.bit.ENABLE && !opts.showDisabled) {
+        return;
+    }
+    opts.out.println("--------------------------- USB");
+
+    opts.out.print("CTRLA: ");
+    PRINTFLAG(USB->DEVICE.CTRLA, ENABLE);
+    PRINTFLAG(USB->DEVICE.CTRLA, RUNSTDBY);
+    opts.out.print(" mode=");
+    opts.out.print(USB->DEVICE.CTRLA.bit.MODE ? "HOST" : "DEVICE");
+    PRINTNL();
+
+    opts.out.print("QOSCTRL:  cqos=");
+    printZeroReg_QOS(opts, USB->DEVICE.QOSCTRL.bit.CQOS);
+    opts.out.print(" dqos=");
+    printZeroReg_QOS(opts, USB->DEVICE.QOSCTRL.bit.DQOS);
+    PRINTNL();
+
+    if (USB->DEVICE.CTRLA.bit.MODE) {
+        printZeroRegUSB_HOST(opts, USB->HOST);
+    } else {
+        printZeroRegUSB_DEVICE(opts, USB->DEVICE);
+    }
 #endif
 }
 

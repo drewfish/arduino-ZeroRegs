@@ -323,8 +323,42 @@ CC3:  0
 ```
 
 
-### void printZeroRegUSB(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**
+### void printZeroRegUSB(ZeroRegOptions &opts)
 Prints out the configuration registers for the `USB` peripheral.
+
+example output:
+```text
+--------------------------- USB
+CTRLA:  ENABLE RUNSTDBY mode=DEVICE
+QOSCTRL:  cqos=LOW dqos=LOW
+CTRLB:  spdconf=FS LPMHDSK=0x0
+DADD:  0x3D ADDEN
+PADCAL:  TRANSP=0x1D TRANSN=0x5 TRIM=0x3
+ENDPOINT0:
+    BANK0:  eptype=CTRL-out ADDR=0x20000D2C size=64byte EXTREG=0x0
+    BANK1:  eptype=CTRL-in ADDR=0x20000B6C size=64byte
+ENDPOINT1:
+    BANK0:  eptype=--disabled--
+    BANK1:  eptype=INT-in ADDR=0x20000BAC size=64byte
+ENDPOINT2:
+    BANK0:  eptype=BULK-out ADDR=0x20001160 size=64byte EXTREG=0x0
+    BANK1:  eptype=--disabled--
+ENDPOINT3:
+    BANK0:  eptype=--disabled--
+    BANK1:  eptype=BULK-in ADDR=0x20000C2C size=64byte
+ENDPOINT4:
+    BANK0:  eptype=--disabled--
+    BANK1:  eptype=--disabled--
+ENDPOINT5:
+    BANK0:  eptype=--disabled--
+    BANK1:  eptype=--disabled--
+ENDPOINT6:
+    BANK0:  eptype=--disabled--
+    BANK1:  eptype=--disabled--
+ENDPOINT7:
+    BANK0:  eptype=--disabled--
+    BANK1:  eptype=--disabled--
+```
 
 
 ### void printZeroRegWDT(ZeroRegOptions &opts)

@@ -300,8 +300,27 @@ CC1:  0
 ```
 
 
-### void printZeroRegTCC(ZeroRegOptions &opts, Tcc* tcc, uint8_t idx) -- **NOT YET IMPLEMENTED**
+### void printZeroRegTCC(ZeroRegOptions &opts, Tcc* tcc, uint8_t idx)
 Prints out the configuration registers for a `TCC` peripheral.
+
+example output:
+```text
+--------------------------- TCC2
+CTRLA:  ENABLE resolution=NONE prescaler=DIV1 prescsync=GCLK
+CTRLB:  dir=UP
+FCTRLA:  SRC=0x0 BLANK=0x0 HALT=0x0 chsel=CC0 CAPTURE=0x0 BLANKVAL=0x0 FILTERVAL=0x0
+FCTRLB:  SRC=0x0 BLANK=0x0 HALT=0x0 chsel=CC0 CAPTURE=0x0 BLANKVAL=0x0 FILTERVAL=0x0
+WEXCTRL:  OTMX=0x0 DTLS=0 DTHS=0
+DRVCTRL:  FILTERVAL0=0x0 FILTERVAL1=0x0
+EVCTRL:  EVACT0=0x0 EVACT1=0x0 CNTSEL=0x0
+PATT:  ........
+WAVE:  WAVEGEN=0x2 RAMP=0x0 POL0=0 POL1=0 POL2=0 POL3=0
+PER:  65535
+CC0:  2304
+CC1:  0
+CC2:  0
+CC3:  0
+```
 
 
 ### void printZeroRegUSB(ZeroRegOptions &opts) -- **NOT YET IMPLEMENTED**

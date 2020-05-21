@@ -1,11 +1,11 @@
 #ifndef EXAMPLE_LOG_STREAM_H
 #define EXAMPLE_LOG_STREAM_H
 
-#include <Stream.h>
+#include <Print.h>
 
 
-class ExampleLogStream : public Stream {
-    Stream &wrapped;
+class ExampleLogPrint : public Print {
+    Print &wrapped;
     bool prefixWritten;
 
     // copied(simplified) from platformio packages/framework-arduinosam/cores/samd/Print.cpp
@@ -35,20 +35,9 @@ class ExampleLogStream : public Stream {
     }
 
 public:
-    ExampleLogStream(Stream &_wrapped) : wrapped(_wrapped), prefixWritten(false) {}
+    ExampleLogPrint(Print &_wrapped) : wrapped(_wrapped), prefixWritten(false) {}
 
-    // virtual functions from Stream
-    int available() {
-        return wrapped.available();
-    }
-    int read() {
-        return wrapped.read();
-    }
-    int peek() {
-        return wrapped.peek();
-    }
-
-    // virtual function from Print (from Stream)
+    // virtual function from Print
     size_t write(uint8_t c) {
         size_t s = 0;
         if (! prefixWritten) {

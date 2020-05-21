@@ -1,7 +1,7 @@
 #include <ZeroRegs.h>
-#include "ExampleLogStream.h"
+#include "ExampleLogPrint.h"
 
-ExampleLogStream logger(Serial);
+ExampleLogPrint logger(Serial);
 bool serialShown = false;
 
 void setup() {
